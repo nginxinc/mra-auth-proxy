@@ -3,10 +3,13 @@
 #''''which python  >/dev/null && exec python  "$0" "$@" # '''
 
 # Copyright (C) 2015 Nginx, Inc.
+# Orignally created by Liam Crilly, updated by Chris Stetson
 
-import threading, sys, os, signal, base64, Cookie, urllib2, json
+import threading, sys, os, signal, base64, Cookie, urllib2, json, pydevd
 from SocketServer import ThreadingMixIn
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+
+pydevd.settrace('ngra.ps.nginxlab.com', port=8889, stdoutToServer=True, stderrToServer=True)
 
 Listen = ('localhost', 8888)
 
@@ -17,9 +20,10 @@ class AuthHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
 
+        self.log_message('Starting Script')
         ctx = dict()
         # set to True to see all response bodies
-        ctx['verbose'] = False
+        ctx['verbose'] = True
         self.ctx = ctx
 
         try:
@@ -31,6 +35,8 @@ class AuthHandler(BaseHTTPRequestHandler):
                 'auth_service': ('X-OAuth-Service', None),
                 'fields' : ('X-OAuth-Result', 'profile, email')
             }
+
+            self.log_message('Iterating Over Params')
 
             for k, v in params.items():
                 ctx[k] = self.headers.get(v[0], v[1])
@@ -47,6 +53,8 @@ class AuthHandler(BaseHTTPRequestHandler):
                 self.send_response(401)
                 self.end_headers()
                 return
+
+            self.log_message('Parsing Header')
 
             if not auth_header.lower().startswith('bearer '):
                 self.auth_failed(ctx, '"Bearer" token not found')

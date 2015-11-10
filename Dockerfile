@@ -26,12 +26,15 @@ RUN apt-get update && apt-get install -y nginx-plus
 RUN ln -sf /dev/stdout /var/log/nginx/access.log
 RUN ln -sf /dev/stderr /var/log/nginx/error.log
 
-EXPOSE 80 443 8888 9000
+EXPOSE 80 443 8888 9000 8889
+#8889 is a debug port
 
 COPY ./nginx-oauth.conf /etc/nginx/
 COPY ./app/ /app
 COPY ./index.html /public_html/
+COPY ./error.log /var/logs/nginx/
 
 RUN chown -R nginx /public_html/
+RUN chown -R nginx /var/logs/nginx/
 
 CMD ["/app/oauth-start.sh"]
