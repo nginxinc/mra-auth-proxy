@@ -37,4 +37,6 @@ COPY ./error.log /var/logs/nginx/
 RUN chown -R nginx /public_html/
 RUN chown -R nginx /var/logs/nginx/
 
+ENV PYTHONPATH /app/pycharm-debug.egg
+
 CMD ["/app/oauth-start.sh"]

@@ -1,7 +1,7 @@
 #!/bin/sh
 conf="/var/run/nginx.pid"    # /   (root directory)
 
-/app/nginx-oauth-daemon.py &
+#/app/nginx-oauth-token-daemon.py &
 
 /app/backend-sample-app.py &
 
