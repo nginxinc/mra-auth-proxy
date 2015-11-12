@@ -6,14 +6,31 @@
 # Updated by Chris Stetson
 
 import threading, sys, os, signal, base64, Cookie, urllib2, json, re, urllib
-from urlparse import urlparse, parse_qs
 from SocketServer import ThreadingMixIn
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
-#sys.path.append("pycharm-debug.egg")
-#import pydevd
-#pydevd.settrace('192.168.99.1', port=8889, stdoutToServer=True, stderrToServer=True)
+####------ The NGINX OAuth2 Daemon -------####
+# The NGINX Oauth2 daemon is intended to provide
+# a single point of entry and authentication for
+# microservice based applications. It provides the
+# integration with NGINX and the logic to manage
+# the connection and authentication semantics for
+# Google+ and Facebook authentication
+# The system goes through a series of steps:
+# 1) Sets up to listen on port 8888
+# 2) Initializes critical variables
+# 3) Get configuration from headers set in nginx.conf
+# 4) Get Args from NGINX and check code token
+# 5) Send request to Oauth-Token-Service using code
+# 6) Send request to Oauth-Service using auth token
+# 7) Extract specified data from response
+# 8) Pass extracted data in response headers
 
+# TODOS:
+# 1) Add Facebook funcitonality
+# 2) Split Auth functionality so that it can be used for API's with are sending just the bearer token
+
+####------ Step 1: set up listening port------####
 Listen = ('localhost', 8888)
 
 class AuthHTTPServer(ThreadingMixIn, HTTPServer):
@@ -23,18 +40,22 @@ class AuthHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
 
-        self.log_message('Starting Script')
-        ctx = dict()
+        ####------ Step 2: Initialize critical variables------####
         # set to True to see all response bodies
+        ctx = dict()
+        # set to True to see debug statements and all response bodies
         ctx['verbose'] = True
         self.ctx = ctx
-        CLIENT_ID='108432233305-b54d09r3l39vbkoj4gkjd7lar67habo7.apps.googleusercontent.com'
-        CLIENT_SECRET='loAdwBqjulSEBh6k1c_ybozb'
-        RURI='http://ngra.ps.nginxlab.com/login'
+
+        if ctx['verbose']: self.log_message('Starting Script')
+
+        CLIENT_ID = self.headers.get('Google-Client-ID')
+        CLIENT_SECRET = self.headers.get('Google-Client-Secret')
+        RURI = self.headers.get('Oauth-RURI')
 
         try:
 
-            # Step 1: get configuration from headers set in nginx.conf
+            ####------ Step 3: get configuration from headers set in nginx.conf------####
             ctx['action'] = 'verifying configuration parameters'
 
             params = {
@@ -43,7 +64,7 @@ class AuthHandler(BaseHTTPRequestHandler):
                 'fields' : ('X-OAuth-Result', 'profile, email')
             }
 
-            self.log_message('Iterating Over Params')
+            if ctx['verbose']: self.log_message('Iterating Over Params')
 
             for k, v in params.items():
                 ctx[k] = self.headers.get(v[0], v[1])
@@ -53,34 +74,23 @@ class AuthHandler(BaseHTTPRequestHandler):
                 else:
                     self.log_message('Header Params ' + k + ': ' + ctx[k])
 
-            # Step 2: check 'Authorisation' header and extract bearer token
-            ctx['action'] = 'performing authorisation'
+            ####------ Step 4: Get Args from NGINX and check code token------####
+            ctx['action'] = 'performing code Authorization'
 
-            auth_header = self.headers.get('Authorization')
+            if ctx['verbose']: self.log_message('URL is: ' + self.path)
 
-            self.log_message('URL is: ' + self.path)
-
-
-            query_components = parse_qs(urlparse(self.path).query)
-            ctx['token'] = self.headers.get('OAuth-Args')
-            if ctx['token'] is not None: self.log_message('OAuth Args: ' + ctx['token'])
+            ctx['args'] = self.headers.get('Oauth-Args')
+            if ctx['args'] is not None: self.log_message('OAuth Args: ' + ctx['args'])
             p = re.compile('code=(.*?)&')
-            ctx['token'] = p.search(ctx['token']).group(1)
-            if ctx['token'] is not None: self.log_message('Found OAuth code: ' + ctx['token'])
-            else: self.log_message('REG-EX got nothing')
+            ctx['token'] = p.search(ctx['args']).group(1)
 
-            if auth_header is None and ctx['token'] is None:
-                self.log_message('no "Authorization" header, return 401')
-                self.send_response(401)
-                self.end_headers()
-                return
-            elif auth_header is None:
-                self.log_message('JWOT Code: ' + ctx['token'])
+            if ctx['token'] is not None and ctx['verbose']: self.log_message('Found OAuth code: ' + ctx['token'])
+            else: self.auth_failed(ctx, 'Code token was not passed in args' + ctx['args'])
 
 
-            # Step 3: send request to service using code
+            ####------ Step 5: send request to service using code------####
             ctx['action'] = 'authorizing with openauth service'
-            self.log_message('authorizing with User Code "%s" at service "%s"'
+            if ctx['verbose']: self.log_message('authorizing with User Code "%s" at service "%s"'
                                          % (ctx['token'], ctx['auth_service']))
 
             values = {  'client_id' : CLIENT_ID,
@@ -92,38 +102,36 @@ class AuthHandler(BaseHTTPRequestHandler):
             postData = urllib.urlencode(values)
 
             req = urllib2.Request(ctx['auth_token_service'],postData)
-            self.log_message('PostData Encoded, Request Set: ')
-            #content = urllib2.urlopen(url=ctx['auth_service'], data=postData).read()
-
-            #req.add_header('Authorization', 'Bearer ' + ctx['token'])
+            if ctx['verbose']: self.log_message('PostData Encoded, Request Set: ')
+ 
             # required by some services, for example github
             req.add_header('User-Agent', 'auth-daemon')
             req.add_header('Content-Type','application/x-www-form-urlencoded')
 
-            self.log_message('Headers Set: URL Connection being opened')
+            if ctx['verbose']: self.log_message('Headers Set: URL Connection being opened')
 
             connection = urllib2.urlopen(req)
             #r = urllib2.urlopen(req)
-            self.log_message('Connection created:')
+            if ctx['verbose']: self.log_message('Connection created:')
 
             content = connection.read()
-            self.log_message('Content read:')
+            if ctx['verbose']: self.log_message('Content read:')
 
             response = json.loads(content)
-            self.log_message('Content parsed into JSON:')
+            if ctx['verbose']: self.log_message('Content parsed into JSON:')
 
             if ctx['verbose']:
                 response_dump = json.dumps(response, indent = 4)
-                self.log_message(response_dump)
+                if ctx['verbose']: self.log_message(response_dump)
 
-            # Step 4: send request to service using auth token
+            ####------ Step 6: send request to service using auth token------####
             ctx['action'] = 'authorising with openauth service'
-            self.log_message('Sending request to service using token')
+            if ctx['verbose']: self.log_message('Sending request to service using token')
 
             ctx['token'] = response['access_token']
 
 
-            self.log_message('authorizing with access_token "%s" at service "%s"'
+            if ctx['verbose']: self.log_message('authorizing with access_token "%s" at service "%s"'
                              % (ctx['token'], ctx['auth_service']))
 
             req = urllib2.Request(ctx['auth_service'])
@@ -131,21 +139,21 @@ class AuthHandler(BaseHTTPRequestHandler):
             req.add_header('Authorization', 'Bearer ' + ctx['token'])
             # required by some services, for example github
             req.add_header('User-Agent', 'auth-daemon')
-            self.log_message('Authorization Header: ' + req.headers['Authorization'])
+            if ctx['verbose']: self.log_message('Authorization Header: ' + req.headers['Authorization'])
 
-            self.log_message('Opening request to ' + ctx['auth_service'])
+            if ctx['verbose']: self.log_message('Opening request to ' + ctx['auth_service'])
             r = urllib2.urlopen(req)
 
-            self.log_message('Reading JSON Response')
+            if ctx['verbose']: self.log_message('Reading JSON Response')
             response = json.loads(r.read())
 
             if ctx['verbose']:
                 response_dump = json.dumps(response, indent = 4)
                 self.log_message(response_dump)
 
-            # Step 5: extract specified data from response
+            ####------ Step 7: extract specified data from response------####
             ctx['action'] = 'extracting data from service response'
-            self.log_message('Extracting data from service response to send to backend app')
+            if ctx['verbose']: self.log_message('Extracting data from service response to send to backend app')
 
             fields = [field.strip() for field in ctx['fields'].split(',')]
 
@@ -157,13 +165,13 @@ class AuthHandler(BaseHTTPRequestHandler):
                     self.auth_failed('Failed to obtain field "%s" from "%s" '
                                      % (field, response_dump))
                     return
-                self.log_message('Extracted "%s" = "%s"' % (field, v))
+                if ctx['verbose']: self.log_message('Extracted "%s" = "%s"' % (field, v))
                 results[field] = v
 
-            self.log_message('Auth OK: all fields found')
+            if ctx['verbose']: self.log_message('Auth OK: all fields found')
             self.send_response(200)
 
-            # pass extracted data in response headers
+            ####------ Step 8: pass extracted data in response headers------####
             for key, value in results.items():
                 hname = 'X-OAuth-%s' % (key)
                 self.send_header(hname, value)
@@ -175,7 +183,7 @@ class AuthHandler(BaseHTTPRequestHandler):
         except urllib2.HTTPError as obj:
 
             body = obj.read()
-            self.log_message('HTTPError: ' + body)
+            if ctx['verbose']: self.log_message('HTTPError: ' + body)
             self.auth_failed(ctx, 'HTTP Error: %s %s, response body: %s'
                                            % (obj.code, obj.reason, body))
 
