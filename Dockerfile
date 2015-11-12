@@ -27,7 +27,6 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log
 RUN ln -sf /dev/stderr /var/log/nginx/error.log
 
 EXPOSE 80 443 8888 9000 8889
-#8889 is a debug port
 
 COPY ./nginx-oauth.conf /etc/nginx/
 COPY ./app/ /app
@@ -37,6 +36,6 @@ COPY ./error.log /var/logs/nginx/
 RUN chown -R nginx /public_html/
 RUN chown -R nginx /var/logs/nginx/
 
-ENV PYTHONPATH /app/pycharm-debug.egg
+#ENV PYTHONPATH /app/pycharm-debug.egg
 
 CMD ["/app/oauth-start.sh"]
