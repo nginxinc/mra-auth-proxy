@@ -49,9 +49,9 @@ class AuthHandler(BaseHTTPRequestHandler):
 
         if ctx['verbose']: self.log_message('Starting Script')
 
-        CLIENT_ID = self.headers.get('Google-Client-ID')
-        CLIENT_SECRET = self.headers.get('Google-Client-Secret')
-        RURI = self.headers.get('Oauth-RURI')
+        ctx['client_id'] = self.headers.get('Google-Client-ID')
+        ctx['client_secret'] = self.headers.get('Google-Client-Secret')
+        ctx['ruri'] = self.headers.get('Oauth-RURI')
 
         try:
 
@@ -93,11 +93,11 @@ class AuthHandler(BaseHTTPRequestHandler):
             if ctx['verbose']: self.log_message('authorizing with User Code "%s" at service "%s"'
                                          % (ctx['token'], ctx['auth_service']))
 
-            values = {  'client_id' : CLIENT_ID,
-                        'client_secret' : CLIENT_SECRET,
+            values = {  'client_id' : ctx['client_id'],
+                        'client_secret' : ctx['client_secret'],
                         'code' : ctx['token'],
                         'grant_type' : 'authorization_code',
-                        'redirect_uri' : RURI}
+                        'redirect_uri' : ctx['ruri']}
 
             postData = urllib.urlencode(values)
 
