@@ -118,26 +118,27 @@ class AuthHandler(BaseHTTPRequestHandler):
             # Step 4: extract specified data from response
             ctx['action'] = 'extracting data from service response'
 
-            fields = [field.strip() for field in ctx['fields'].split(',')]
+            #fields = [field.strip() for field in ctx['fields'].split(',')]
 
-            results = { }
-            for field in fields:
-                v = response[field]
-                if v is None or v == '':
-                    response_dump = json.dumps(response, indent = 4)
-                    self.auth_failed('Failed to obtain field "%s" from "%s" '
-                                                      % (field, response_dump))
-                    return
-                self.log_message('Extracted "%s" = "%s"' % (field, v))
-                results[field] = v
+            # results = { }
+            # for field in fields:
+            #     v = response[field]
+            #     if v is None or v == '':
+            #         response_dump = json.dumps(response, indent = 4)
+            #         self.auth_failed('Failed to obtain field "%s" from "%s" '
+            #                                           % (field, response_dump))
+            #         return
+            #     self.log_message('Extracted "%s" = "%s"' % (field, v))
+            #     results[field] = v
 
             self.log_message('Auth OK: all fields found')
             self.send_response(200)
 
             # pass extracted data in response headers
-            for key, value in results.items():
-                hname = 'X-OAuth-%s' % (key)
-                self.send_header(hname, value)
+            #for key, value in results.items():
+            hname = 'Authorization'
+            value = "Bearer " + response['access_token']
+            self.send_header(hname, value)
 
             self.end_headers()
 

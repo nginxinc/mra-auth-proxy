@@ -17,9 +17,10 @@ class AuthHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
 
+        self.log_message('Starting Script')
         ctx = dict()
         # set to True to see all response bodies
-        ctx['verbose'] = False
+        ctx['verbose'] = True
         self.ctx = ctx
 
         try:
@@ -32,6 +33,8 @@ class AuthHandler(BaseHTTPRequestHandler):
                 'fields' : ('X-OAuth-Result', 'profile, email')
             }
 
+            self.log_message('Iterating Over Params')
+
             for k, v in params.items():
                 ctx[k] = self.headers.get(v[0], v[1])
                 if ctx[k] == None:
@@ -40,6 +43,8 @@ class AuthHandler(BaseHTTPRequestHandler):
 
             # Step 2: check 'Authorisation' header and extract bearer token
             ctx['action'] = 'performing authorisation'
+
+            self.log_message('Checking auth header')
 
             auth_header = self.headers.get('Authorization')
             if auth_header is None:
@@ -56,6 +61,9 @@ class AuthHandler(BaseHTTPRequestHandler):
 
             # Step 3: send request to service using token
             ctx['action'] = 'authorising with openauth service'
+            self.log_message('Sending request to service using token')
+
+
             self.log_message('authorising with token "%s" at service "%s"'
                                          % (ctx['token'], ctx['auth_service']))
 
