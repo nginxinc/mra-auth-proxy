@@ -22,7 +22,11 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return 'Hello World!'
+	if request.headers.get('X-Authentication-Provider') == 'facebook':
+		return facebook()
+
+	return 'Hello World!'
+	
 
 @app.route('/facebook')
 def facebook():
@@ -63,4 +67,4 @@ def facebook():
 	
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8888, debug = True)
+	app.run(host='0.0.0.0', port=8888, debug = True)
