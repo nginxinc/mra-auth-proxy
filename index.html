@@ -2,6 +2,9 @@
 
 <head>
     <title>Login page</title>
+    <meta name="google-signin-scope" content="profile email">
+    <meta name="google-signin-client_id" content="129544795844-404ld40323v59g792dp147dspiiseu1b.apps.googleusercontent.com">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
 </head>
 
 <body>
@@ -96,24 +99,21 @@
     <div id="status">
     </div>
 
-    <h2>Login page</h2>
-    <form action="https://accounts.google.com/o/oauth2/auth" method=GET>
-        <input type=hidden name=scope value="openid email">
-        <input type=hidden name=state value="12345">
-        <input type=hidden name=response_type value="code">
-        <input type=submit value="Sign in with Google" style="font-size: 12pt;">
-        <p>
-            <hr>
-            <p>
-                <code>client_id</code>
-                <br/>
-                <input type=text name=client_id value="108432233305-b54d09r3l39vbkoj4gkjd7lar67habo7.apps.googleusercontent.com">
-                <br/>
-                <code>redirect_uri</code>
-                <br/>
-                <input type=text name=redirect_uri value="http://ngra.ps.nginxlab.com/login">
-                </br>
-    </form>
+    <div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
+    <script>
+      function onSignIn(googleUser) {
+        // Useful data for your client-side scripts:
+        var profile = googleUser.getBasicProfile();
+        console.log("ID: " + profile.getId()); // Don't send this directly to your server!
+        console.log("Name: " + profile.getName());
+        console.log("Image URL: " + profile.getImageUrl());
+        console.log("Email: " + profile.getEmail());
+
+        // The ID token you need to pass to your backend:
+        var id_token = googleUser.getAuthResponse().id_token;
+        console.log("ID Token: " + id_token);
+      };
+    </script>
 </body>
 
 </html>

@@ -7,6 +7,8 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 
 RUN apt-get update && apt-get install -y -q \
 	apt-transport-https \
+	libffi-dev \
+	libssl-dev \
 	python \
 	python-dev \
 	python-pip \
@@ -37,7 +39,7 @@ COPY ./error.log /var/logs/nginx/
 RUN chown -R nginx /public_html/ && \
 	chown -R nginx /var/logs/nginx/
 
-RUN pip install Flask python-dotenv
+RUN pip install Flask python-dotenv oauth2client pyopenssl
 
 #ENV PYTHONPATH /app/pycharm-debug.egg
 
