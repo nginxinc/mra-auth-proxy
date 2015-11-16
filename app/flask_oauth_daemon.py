@@ -26,55 +26,53 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-	if request.headers.get('X-Authentication-Provider') == 'facebook':
-		return facebook()
+	try:	
+		auth_token = request.headers.get('Auth-Token')
 
-	if request.headers.get('X-Authentication-Provider') == 'google':
-		return google()
+		if request.headers.get('Auth-Provider') == 'facebook':
+			result = facebook(auth_token)
+		elif request.headers.get('Auth-Provider') == 'google':
+			result = google(auth_token)
+		else:
+			app.logger.error('No auth provider matches')
+			abort(401)
 
-	return 'Hello World!'
+		resp = Response(status=200)
+		resp.headers['X-OAuth-Result'] = json.dumps(result)
+		resp.headers['X-OAuth-name'] = result['name']
+		resp.headers['X-OAuth-email'] = result['email']
+		return resp
+	except Exception as e:
+		app.logger.error(e)
+		abort(401)
 	
 
-@app.route('/facebook')
-def facebook():
-	input_token = request.headers.get('X-Access-Token')
+def facebook(input_token):
+	token_verification_params = {
+		'input_token': input_token,
+		'access_token' :facebook_app_access_token
+	}
 
-	token = requests.get(
-			'https://graph.facebook.com/debug_token',
-			params = {
-				'input_token': input_token,
-				'access_token' :facebook_app_access_token
-			}
-		).json()
+	token = requests.get('https://graph.facebook.com/debug_token', params=token_verification_params).json()
 
 	app.logger.debug(token)
 
-	try:
-		if token['data']['is_valid']:
-			profile = requests.get(
-					'https://graph.facebook.com',
-					params = {
-						'access_token': facebook_app_access_token,
-						'id': token['data']['user_id'],
-						'fields': 'id,name,email,picture'
-					}
-				).json()
+	if token['data']['is_valid']:
+		user_info_params = {
+			'access_token': facebook_app_access_token,
+			'id': token['data']['user_id'],
+			'fields': 'id,name,email,picture'
+		}
 
-			resp = Response(status=200)
-			resp.headers['X-OAuth-Result'] = json.dumps(profile)
-			return resp
-		else:
-			app.logger.error(token.data.error)
-			abort(401)
-	except Exception as e:
-		app.logger.error(e)
-		app.logger.error(token)
+		profile = requests.get('https://graph.facebook.com', params=user_info_params).json()
+
+		return profile
+	else:
+		app.logger.error(token.data.error)
 		abort(401)
+	
 
-@app.route('/google')
-def google():
-	token = request.headers.get('X-Access-Token')
-
+def google(token):
 	try:
 		idinfo = client.verify_id_token(token, google_client_id)
 		# If multiple clients access the backend server:
@@ -93,9 +91,7 @@ def google():
 			'email': idinfo['email']
 		}
 
-		resp = Response(status=200)
-		resp.headers['X-OAuth-Result'] = json.dumps(result)
-		return resp
+		return result
 	except crypt.AppIdentityError:
 		# Invalid token
 		abort(401)
