@@ -40,7 +40,7 @@ COPY public_html /public_html/
 RUN chown -R nginx /public_html/ && \
 	chown -R nginx /var/logs/nginx/
 
-RUN pip install Flask python-dotenv oauth2client pyopenssl
+RUN pip install Flask oauth2client pyopenssl
 
 #ENV PYTHONPATH /app/pycharm-debug.egg
 

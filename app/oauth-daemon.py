@@ -5,7 +5,6 @@
 # Copyright (C) 2014-2015 Nginx, Inc.
 
 import json
-import os
 import requests
 import string
 
@@ -14,20 +13,7 @@ from flask import request
 from flask import abort
 from flask import Response
 
-from os.path import join, dirname
-from dotenv import load_dotenv
-
 from oauth2client import client, crypt
-
-dotenv_path = join(dirname(__file__), '.env')
-load_dotenv(dotenv_path)
-
-facebook_app_id = os.environ.get("FACEBOOK_APP_ID")
-facebook_app_secret = os.environ.get("FACEBOOK_APP_SECRET")
-facebook_app_access_token = facebook_app_id + '|' + facebook_app_secret
-
-google_client_id = os.environ.get("GOOGLE_CLIENT_ID")
-google_client_secret = os.environ.get("GOOGLE_CLIENT_SECRET")
 
 app = Flask(__name__)
 
@@ -60,9 +46,13 @@ def index():
 	
 
 def facebook(input_token):
+	facebook_app_id = request.headers.get('Facebook-App-ID')
+	facebook_app_secret = request.headers.get('Facebook-App-Secret')
+	facebook_app_access_token = facebook_app_id + '|' + facebook_app_secret
+
 	token_verification_params = {
 		'input_token': input_token,
-		'access_token' :facebook_app_access_token
+		'access_token': facebook_app_access_token
 	}
 
 	token = requests.get('https://graph.facebook.com/debug_token', params=token_verification_params).json()
@@ -85,6 +75,8 @@ def facebook(input_token):
 	
 
 def google(token):
+	google_client_id = request.headers.get('Google-Client-ID')
+
 	try:
 		idinfo = client.verify_id_token(token, google_client_id)
 		# If multiple clients access the backend server:
