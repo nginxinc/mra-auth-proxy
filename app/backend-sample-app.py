@@ -25,8 +25,10 @@ class AppHandler(BaseHTTPRequestHandler):
 
         self.log_message('Accepted request in application')
 
-        name = self.headers.get('X-Auth-Name')
-        email = self.headers.get('X-Auth-email')
+        id = self.headers.get('Auth-ID')
+        name = self.headers.get('Auth-Name')
+        email = self.headers.get('Auth-Email')
+        result = self.headers.get('Auth-Result')
 
         html="""
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
