@@ -1,0 +1,3 @@
+Flask
+oauth2client
+pyopenssl
