@@ -31,10 +31,11 @@ RUN apt-get update && apt-get install -y nginx-plus
 RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
 	ln -sf /dev/stderr /var/log/nginx/error.log
 
+RUN mkdir -p /var/logs/nginx
+
 COPY ./nginx-oauth.conf /etc/nginx/
 COPY ./app/ /app
 COPY public_html /public_html/
-COPY ./error.log /var/logs/nginx/
 
 RUN chown -R nginx /public_html/ && \
 	chown -R nginx /var/logs/nginx/

@@ -1,7 +1,7 @@
 #!/bin/sh
 conf="/var/run/nginx.pid"    # /   (root directory)
 
-/app/flask-oauth-daemon.py &
+/app/oauth-daemon.py &
 
 /app/backend-sample-app.py &
 
