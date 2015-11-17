@@ -6,9 +6,13 @@ MAINTAINER NGINX Docker Maintainers "docker-maint@nginx.com"
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
 RUN apt-get update && apt-get install -y -q \
-	wget \
 	apt-transport-https \
-	python
+	libffi-dev \
+	libssl-dev \
+	python \
+	python-dev \
+	python-pip \
+	wget
 
 # Download certificate and key from the customer portal (https://cs.nginx.com)
 # and copy to the build context
@@ -27,16 +31,19 @@ RUN apt-get update && apt-get install -y nginx-plus
 RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
 	ln -sf /dev/stderr /var/log/nginx/error.log
 
-EXPOSE 80 443 8888 9000 8889
+RUN mkdir -p /var/logs/nginx
 
 COPY ./nginx-oauth.conf /etc/nginx/
 COPY ./app/ /app
-COPY ./index.html /public_html/
-COPY ./error.log /var/logs/nginx/
+COPY public_html /public_html/
 
-RUN chown -R nginx /public_html/
-RUN chown -R nginx /var/logs/nginx/
+RUN chown -R nginx /public_html/ && \
+	chown -R nginx /var/logs/nginx/
+
+RUN pip install Flask oauth2client pyopenssl
 
 #ENV PYTHONPATH /app/pycharm-debug.egg
 
 CMD ["/app/oauth-start.sh"]
+
+EXPOSE 80 443 8888 9000 8889
