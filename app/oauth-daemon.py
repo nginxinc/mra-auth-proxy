@@ -7,6 +7,7 @@
 import json
 import os
 import requests
+import string
 
 from flask import Flask
 from flask import request
@@ -34,19 +35,24 @@ app = Flask(__name__)
 def index():
 	try:	
 		auth_token = request.headers.get('Auth-Token')
+		auth_provider = request.headers.get('Auth-Provider')
+		auth_fields = request.headers.get('Auth-Fields')
 
-		if request.headers.get('Auth-Provider') == 'facebook':
+		if auth_provider == 'facebook':
 			result = facebook(auth_token)
-		elif request.headers.get('Auth-Provider') == 'google':
+		elif auth_provider == 'google':
 			result = google(auth_token)
 		else:
 			app.logger.error('No auth provider matches')
 			abort(401)
 
 		resp = Response(status=200)
-		resp.headers['X-OAuth-Result'] = json.dumps(result)
-		resp.headers['X-OAuth-name'] = result['name']
-		resp.headers['X-OAuth-email'] = result['email']
+		resp.headers['Auth-Result'] = json.dumps(result)
+		
+		for field in string.split(auth_fields, ','):
+			if field in result:
+				resp.headers['Auth-' + field] = result[field]
+
 		return resp
 	except Exception as e:
 		app.logger.error(e)
