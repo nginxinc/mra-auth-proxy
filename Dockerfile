@@ -33,7 +33,7 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
 
 COPY ./nginx-oauth.conf /etc/nginx/
 COPY ./app/ /app
-COPY ./index.html /public_html/
+COPY public_html /public_html/
 COPY ./error.log /var/logs/nginx/
 
 RUN chown -R nginx /public_html/ && \

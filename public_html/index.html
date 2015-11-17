@@ -5,6 +5,7 @@
     <meta name="google-signin-scope" content="profile email">
     <meta name="google-signin-client_id" content="129544795844-404ld40323v59g792dp147dspiiseu1b.apps.googleusercontent.com">
     <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script src="http://ngra.ps.nginxlab.com/js.cookie.js"></script>
 </head>
 
 <body>
@@ -20,6 +21,9 @@
         if (response.status === 'connected') {
             // Logged into your app and Facebook.
             testAPI();
+
+            Cookies.set('auth_provider', 'facebook');
+            Cookies.set('auth_token', response.authResponse.accessToken);
         } else if (response.status === 'not_authorized') {
             // The person is logged into Facebook, but not your app.
             document.getElementById('status').innerHTML = 'Please log ' +
@@ -90,10 +94,10 @@
     }
     </script>
     <!--
-  Below we include the Login Button social plugin. This button uses
-  the JavaScript SDK to present a graphical Login button that triggers
-  the FB.login() function when clicked.
--->
+      Below we include the Login Button social plugin. This button uses
+      the JavaScript SDK to present a graphical Login button that triggers
+      the FB.login() function when clicked.
+    -->
     <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
     </fb:login-button>
     <div id="status">
@@ -112,6 +116,9 @@
         // The ID token you need to pass to your backend:
         var id_token = googleUser.getAuthResponse().id_token;
         console.log("ID Token: " + id_token);
+
+        Cookies.set('auth_provider', 'google');
+        Cookies.set('auth_token', id_token);
       };
     </script>
 </body>
