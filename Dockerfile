@@ -33,7 +33,6 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
 
 COPY ./nginx-oauth.conf /etc/nginx/
 COPY ./app/ /app
-COPY public_html /public_html/
 
 RUN pip install -r /app/requirements.txt
 

@@ -1,17 +1,18 @@
-name = ngrefarch/oauth_daemon_example
-volumes = -v $(CURDIR)/app:/app -v $(CURDIR)/public_html:/public_html
+tag = ngrefarch/auth-proxy
+volumes = -v $(CURDIR)/app:/app -v $(CURDIR)/nginx-oauth.conf:/etc/nginx/nginx-oauth.conf
+ports = -p 81:80
 
 build:
-	docker build -t $(name) .
+	docker build -t $(tag) .
 
 run:
-	docker run -it -p 80:80 $(name)
+	docker run -it $(ports) $(tag)
 
 run-v:
-	docker run -it -p 80:80 $(volumes) $(name)
+	docker run -it $(ports) $(volumes) $(tag)
 
 shell:
-	docker run -it -p 80:80 -p 8888:8888 $(volumes) $(name) bash
+	docker run -it $(ports) $(volumes) $(tag) bash
 
 push:
-	docker push $(name)
+	docker push $(tag)
