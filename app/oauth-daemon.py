@@ -24,12 +24,17 @@ def index():
         auth_fields = request.headers.get('Auth-Fields')
 
         if auth_provider == 'facebook':
-            result = facebook(auth_token)
+            auth_result = facebook(auth_token)
         elif auth_provider == 'google':
-            result = google(auth_token)
+            auth_result = google(auth_token)
         else:
             app.logger.error('No auth provider matches')
             abort(401)
+
+        result = get_or_create_user(auth_provider, auth_result)
+        result['auth_result'] = auth_result
+
+        app.logger.debug(json.dumps(result))
 
         resp = Response(status=200)
         resp.headers['Auth-Result'] = json.dumps(result)
@@ -43,6 +48,22 @@ def index():
         app.logger.error(e)
         abort(401)
 
+def get_or_create_user(auth_provider, auth_result):
+    url = request.headers.get('User-Manager-URL')
+
+    response = requests.get((url + '/{}/{}').format(auth_provider, id))
+
+    if (response.status_code == 200):
+        return response.json()
+    elif (response.status_code == 404):
+        payload = {
+            'name': auth_result['name'],
+            'email': auth_result['email'],
+            auth_provider + '_id': auth_result['id']
+        }
+        return requests.post(url, json=payload).json()
+    else:
+        app.logger.error(response)
 
 def facebook(input_token):
     facebook_app_id = request.headers.get('Facebook-App-ID')
