@@ -5,6 +5,9 @@ services:
 - docker
 
 before_install:
+- sudo apt-get update
+- sudo apt-get install docker-engine
+- sudo service docker restart
 - make build
 
 script:
