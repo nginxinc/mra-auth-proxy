@@ -1,0 +1,16 @@
+sudo: required
+language: python
+
+services:
+- docker
+
+before_install:
+- make build
+
+script:
+- make test
+- make push
+
+after_success:
+- pip install fabric
+- fab deploy
