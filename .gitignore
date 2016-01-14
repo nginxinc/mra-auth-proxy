@@ -4,3 +4,4 @@ app/.DS_Store
 .idea
 nginx-repo.crt
 nginx-repo.key
+fabfile.pyc
