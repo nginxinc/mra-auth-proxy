@@ -7,6 +7,7 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 
 RUN apt-get update && apt-get install -y -q \
 	apt-transport-https \
+	jq \
 	libffi-dev \
 	libssl-dev \
 	python \
@@ -14,9 +15,15 @@ RUN apt-get update && apt-get install -y -q \
 	python-pip \
 	wget
 
-# Download certificate and key from the customer portal (https://cs.nginx.com)
-# and copy to the build context
-COPY nginx-repo.crt nginx-repo.key /etc/ssl/nginx/
+# Download certificate and key from the the vault and copy to the build context
+ARG VAULT_TOKEN
+RUN mkdir -p /etc/ssl/nginx
+RUN wget -q -O - --header="X-Vault-Token: $VAULT_TOKEN" \
+    http://vault.ngra.ps.nginxlab.com:8200/v1/secret/nginx-repo.crt \
+    | jq -r .data.value > /etc/ssl/nginx/nginx-repo.crt
+RUN wget -q -O - --header="X-Vault-Token: $VAULT_TOKEN" \
+    http://vault.ngra.ps.nginxlab.com:8200/v1/secret/nginx-repo.key \
+    | jq -r .data.value > /etc/ssl/nginx/nginx-repo.key
 
 # Get other files required for installation
 RUN wget -q -O /etc/ssl/nginx/CA.crt https://cs.nginx.com/static/files/CA.crt && \
