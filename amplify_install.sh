@@ -391,6 +391,28 @@ else
     exit 1
 fi
 
+
+# Add Hostname key
+printf "\033[32m ${step}. Checking Hostname ...\033[0m"
+
+if [ -n "$HOSTNAME" ]; then
+    hostname=$HOSTNAME
+	${sudo_cmd} cp ${agent_conf_file} ${agent_conf_file}.intermediate && \
+	${sudo_cmd} rm -f ${agent_conf_file} && \
+	${sudo_cmd} sh -c "sed 's/hostname.*$/hostname = $hostname/' \
+		${agent_conf_file}.intermediate > \
+		${agent_conf_file}" && \
+	${sudo_cmd} chmod 644 ${agent_conf_file} && \
+	${sudo_cmd} chown nginx ${agent_conf_file} > /dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		printf "\033[32m done.\033[0m\n\n"
+	else
+		printf "\033[31m failed.\033[0m\n\n"
+		exit 1
+	fi
+
+fi
+
 # Check if init.d script exists
 if [ ! -x /etc/init.d/amplify-agent ]; then
     printf "\033[31m Error: /etc/init.d/amplify-agent not found!\033[0m\n\n"

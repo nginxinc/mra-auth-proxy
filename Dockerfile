@@ -43,7 +43,7 @@ COPY ./app/ /app
 COPY ./amplify_install.sh /amplify_install.sh
 
 RUN pip install -r /app/requirements.txt
-RUN API_KEY='0202c79a3d8411fcf82b35bc3d458f7e' sh ./amplify_install.sh
+RUN API_KEY='0202c79a3d8411fcf82b35bc3d458f7e' HOSTNAME='auth-proxy' sh ./amplify_install.sh
 
 CMD ["/app/oauth-start.sh"]
 
