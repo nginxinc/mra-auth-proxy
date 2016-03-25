@@ -13,5 +13,5 @@ sleep 30
 
 while [ -f "$conf" ]
 do 
-	sleep 500;
+	sleep 5;
 done
