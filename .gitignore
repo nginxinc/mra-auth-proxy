@@ -5,3 +5,10 @@ app/.DS_Store
 nginx-repo.crt
 nginx-repo.key
 fabfile.pyc
+aws_ha.bbprojectd
+ubuntu@54.67.81.211
+.env
+jmeter.log
+nginx
+letsencrypt
+letsencrypt-etc

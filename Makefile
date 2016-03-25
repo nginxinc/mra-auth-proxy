@@ -1,6 +1,6 @@
 tag = ngrefarch/auth-proxy
 volumes = -v $(CURDIR)/app:/app -v $(CURDIR)/nginx-oauth.conf:/etc/nginx/nginx-oauth.conf
-ports = -p 81:80
+ports = -p 80:80 -p 443:443
 
 build: check-env
 	docker build --build-arg VAULT_TOKEN=$(VAULT_TOKEN) -t $(tag) .
