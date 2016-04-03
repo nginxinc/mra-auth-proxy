@@ -8,6 +8,8 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 RUN apt-get update && apt-get install -y -q \
 	apt-transport-https \
 	jq \
+	vim \
+	curl \
 	libffi-dev \
 	libssl-dev \
 	python \
@@ -49,7 +51,7 @@ COPY ./amplify_install.sh /amplify_install.sh
 #COPY ./nginx /usr/sbin/nginx
 
 RUN pip install -r /app/requirements.txt
-RUN API_KEY='0202c79a3d8411fcf82b35bc3d458f7e' HOSTNAME='auth-proxy' sh ./amplify_install.sh
+RUN API_KEY='0202c79a3d8411fcf82b35bc3d458f7e' HOSTNAME='mesos-auth-proxy' sh ./amplify_install.sh
 
 CMD ["/app/oauth-start.sh"]
 
