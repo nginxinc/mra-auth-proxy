@@ -20,8 +20,8 @@ RUN wget https://releases.hashicorp.com/vault/0.5.2/vault_0.5.2_linux_amd64.zip 
 	unzip -d /usr/local/bin vault_0.5.2_linux_amd64.zip
 
 # Download certificate and key from the the vault and copy to the build context
-ENV VAULT_TOKEN=4b9f8249-538a-d75a-e6d3-69f5355c1751
-ENV VAULT_ADDR=http://vault.ngra.ps.nginxlab.com:8200
+ENV VAULT_TOKEN=4b9f8249-538a-d75a-e6d3-69f5355c1751 \
+		VAULT_ADDR=http://vault.ngra.ps.nginxlab.com:8200
 
 RUN mkdir -p /etc/ssl/nginx && \
 	vault token-renew && \
