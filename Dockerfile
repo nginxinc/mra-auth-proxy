@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y -q \
 	wget
 
 # Install vault client
-RUN wget https://releases.hashicorp.com/vault/0.5.2/vault_0.5.2_linux_amd64.zip && \
+RUN wget -q https://releases.hashicorp.com/vault/0.5.2/vault_0.5.2_linux_amd64.zip && \
 	unzip -d /usr/local/bin vault_0.5.2_linux_amd64.zip
 
 # Download certificate and key from the the vault and copy to the build context
