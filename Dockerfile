@@ -42,12 +42,14 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
 	ln -sf /dev/stderr /var/log/nginx/error.log
 
 COPY ./nginx-oauth.conf /etc/nginx/
-COPY ./app/ /app
-COPY ./amplify_install.sh /amplify_install.sh
 
-RUN pip install -r /app/requirements.txt
+COPY ./amplify_install.sh /amplify_install.sh
 RUN API_KEY='0202c79a3d8411fcf82b35bc3d458f7e' HOSTNAME='auth-proxy' sh ./amplify_install.sh
 
+COPY ./app/requirements.txt /app/requirements.txt
+RUN pip install -r /app/requirements.txt
+
+COPY ./app/ /app
 CMD ["/app/oauth-start.sh"]
 
 EXPOSE 80 443 8888 9000 8889

@@ -12,9 +12,16 @@ from flask import request
 from flask import abort
 from flask import Response
 from oauth2client import client, crypt
+import os
+import redis
+import traceback
 
 app = Flask(__name__)
 
+r = redis.Redis(
+    host=os.environ.get('REDIS_HOST'),
+    port=os.environ.get('REDIS_PORT')
+)
 
 @app.route('/')
 def index():
@@ -23,13 +30,7 @@ def index():
         auth_provider = request.headers.get('Auth-Provider')
         auth_fields = request.headers.get('Auth-Fields')
 
-        if auth_provider == 'facebook':
-            auth_result = facebook(auth_token)
-        elif auth_provider == 'google':
-            auth_result = google(auth_token)
-        else:
-            app.logger.error('No auth provider matches')
-            abort(401)
+        auth_result = cached_authenticate(auth_token, auth_provider)
 
         result = get_or_create_user(auth_provider, auth_result)
         result['auth_result'] = auth_result
@@ -46,11 +47,40 @@ def index():
         return resp
     except Exception as e:
         app.logger.error(e)
+        traceback.print_exc('/dev/stdout')
         abort(401)
+
+
+def cached_authenticate(auth_token, auth_provider):
+    key = auth_token + '_' + auth_provider
+    app.logger.debug('Key:' + key)
+
+    result = r.get(key)
+
+    if result is not None:
+        result = json.loads(result)
+    else:
+        result = authenticate(auth_token, auth_provider)
+        app.logger.debug(result)
+        r.setex(key, json.dumps(result), int(os.environ.get('REDIS_TTL')))
+
+    return result
+
+
+def authenticate(auth_token, auth_provider):
+    if auth_provider == 'facebook':
+        auth_result = facebook(auth_token)
+    elif auth_provider == 'google':
+        auth_result = google(auth_token)
+    else:
+        app.logger.error('No auth provider matches')
+        abort(401)
+
+    return auth_result
+
 
 def get_or_create_user(auth_provider, auth_result):
     url = request.headers.get('User-Manager-URL')
-
     response = requests.get((url + '/{}/{}').format(auth_provider, auth_result['id']))
 
     if (response.status_code == 200):
@@ -64,6 +94,7 @@ def get_or_create_user(auth_provider, auth_result):
         return requests.post(url, json=payload).json()
     else:
         app.logger.error(response)
+
 
 def facebook(input_token):
     facebook_app_id = request.headers.get('Facebook-App-ID')
@@ -122,4 +153,4 @@ def google(token):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8888, debug=True)
+    app.run(host='0.0.0.0', port=8888, debug=os.environ.get('FLASK_DEBUG', False))
