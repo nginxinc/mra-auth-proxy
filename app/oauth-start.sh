@@ -14,4 +14,5 @@ sleep 30
 while [ -f "$conf" ]
 do 
 	sleep 5;
+	print "in the while loop\n";
 done

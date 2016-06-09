@@ -37,21 +37,23 @@ RUN wget -q -O /etc/ssl/nginx/CA.crt https://cs.nginx.com/static/files/CA.crt &&
 	printf "deb https://plus-pkgs.nginx.com/ubuntu `lsb_release -cs` nginx-plus\n" >/etc/apt/sources.list.d/nginx-plus.list
 
 # Install NGINX Plus
-RUN apt-get update && apt-get install -y nginx-plus-extras
+RUN apt-get update && apt-get install -y nginx-plus
+
+# Install Amplify
+RUN curl -sS -L -O  https://github.com/nginxinc/nginx-amplify-agent/raw/master/packages/install.sh && \
+	API_KEY='0202c79a3d8411fcf82b35bc3d458f7e' AMPLIFY_HOSTNAME='mesos-auth-proxy' sh ./install.sh
+
+COPY ./status.html /usr/share/nginx/html/status.html
 
 # forward request logs to Docker log collector
 RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
 	ln -sf /dev/stderr /var/log/nginx/error.log
 
-COPY ./nginx-oauth.conf /etc/nginx/
 COPY ./nginx-gz.conf /etc/nginx/
 COPY ./nginx-ssl.conf /etc/nginx/
 COPY ./app/ /app
-COPY ./amplify_install.sh /amplify_install.sh
-#COPY ./nginx /usr/sbin/nginx
-
 RUN pip install -r /app/requirements.txt
-RUN API_KEY='0202c79a3d8411fcf82b35bc3d458f7e' HOSTNAME='mesos-auth-proxy' sh ./amplify_install.sh
+COPY ./nginx-oauth.conf /etc/nginx/
 
 CMD ["/app/oauth-start.sh"]
 
