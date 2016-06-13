@@ -18,10 +18,13 @@ import traceback
 
 app = Flask(__name__)
 
-r = redis.Redis(
-    host=os.environ.get('REDIS_HOST'),
-    port=os.environ.get('REDIS_PORT')
-)
+if os.environ.get('REDIS_ENABLED'):
+    r = redis.Redis(
+        host=os.environ.get('REDIS_HOST'),
+        port=os.environ.get('REDIS_PORT')
+    )
+else:
+    r = None
 
 @app.route('/')
 def index():
@@ -30,7 +33,10 @@ def index():
         auth_provider = request.headers.get('Auth-Provider')
         auth_fields = request.headers.get('Auth-Fields')
 
-        auth_result = cached_authenticate(auth_token, auth_provider)
+        if r is not None:
+            auth_result = cached_authenticate(auth_token, auth_provider)
+        else:
+            auth_result = authenticate(auth_token, auth_provider)
 
         result = get_or_create_user(auth_provider, auth_result)
         result['auth_result'] = auth_result
