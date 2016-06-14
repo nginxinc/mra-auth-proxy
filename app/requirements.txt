@@ -1,4 +1,5 @@
 Flask
 oauth2client
 pyopenssl
+redis==2.10.5
 requests==2.8.1
