@@ -37,7 +37,7 @@ RUN mkdir -p /etc/ssl/nginx && \
 COPY ./dhparam.pem /etc/ssl/nginx/
 COPY ./letsencrypt-etc /etc/letsencrypt
 COPY /letsencrypt /usr/local/letsencrypt
-RUN chown -R root /etc/letsencrypt
+RUN chown -R root:root /etc/letsencrypt
 
 RUN wget -q -O /etc/ssl/nginx/CA.crt https://cs.nginx.com/static/files/CA.crt && \
 	wget -q -O - http://nginx.org/keys/nginx_signing.key | apt-key add - && \
