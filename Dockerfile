@@ -55,10 +55,13 @@ COPY ./status.html /usr/share/nginx/html/status.html
 
 # forward request logs to Docker log collector
 RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
-	ln -sf /dev/stderr /var/log/nginx/error.log
+	ln -sf /dev/stdout /var/log/nginx/error.log
 
 COPY ./nginx-gz.conf /etc/nginx/
 COPY ./nginx-ssl.conf /etc/nginx/
+COPY ./nginx-oauth.conf /etc/nginx/
+RUN rm -r /etc/nginx/conf.d/
+COPY ./conf.d /etc/nginx/conf.d
 COPY ./app/ /app
 RUN pip install -r /app/requirements.txt
 
