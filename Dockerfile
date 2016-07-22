@@ -31,13 +31,14 @@ RUN mkdir -p /etc/ssl/nginx && \
 	vault read -field=value secret/nginx-repo.crt > /etc/ssl/nginx/nginx-repo.crt && \
 	vault read -field=value secret/nginx-repo.key > /etc/ssl/nginx/nginx-repo.key
 
-# Get other files required for installation
-#COPY ./nginx-repo.key /etc/ssl/nginx/
-#COPY ./nginx-repo.crt /etc/ssl/nginx/
+# Get SSL/letsencrypt files required for installation
 COPY ./dhparam.pem /etc/ssl/nginx/
 COPY ./letsencrypt-etc /etc/letsencrypt
-COPY /letsencrypt /usr/local/letsencrypt
-RUN chown -R root:root /etc/letsencrypt
+RUN chown -R root:root /etc/letsencrypt && \
+	cd /usr/local && \
+	wget https://dl.eff.org/certbot-auto && \
+	chmod a+x certbot-auto && \
+	./certbot-auto
 
 RUN wget -q -O /etc/ssl/nginx/CA.crt https://cs.nginx.com/static/files/CA.crt && \
 	wget -q -O - http://nginx.org/keys/nginx_signing.key | apt-key add - && \
@@ -57,9 +58,10 @@ COPY ./status.html /usr/share/nginx/html/status.html
 RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
 	ln -sf /dev/stdout /var/log/nginx/error.log
 
-COPY ./nginx-gz.conf /etc/nginx/
-COPY ./nginx-ssl.conf /etc/nginx/
-COPY ./nginx-oauth.conf /etc/nginx/
+COPY ./nginx*.conf /etc/nginx/
+#COPY ./nginx-ssl.conf /etc/nginx/
+#COPY ./nginx-fabric.conf /etc/nginx/
+#COPY ./nginx.conf /etc/nginx/
 RUN rm -r /etc/nginx/conf.d/
 COPY ./conf.d /etc/nginx/conf.d
 COPY ./app/ /app

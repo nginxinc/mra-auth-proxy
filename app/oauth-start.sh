@@ -1,18 +1,29 @@
 #!/bin/sh
 conf="/var/run/nginx.pid"    # /   (root directory)
+APP="oauth-daemon.py"
+PID=`ps aux | grep $APP | grep -v grep`
 
-/app/oauth-daemon.py &
+nginx_conf="/etc/nginx/nginx.conf";
+nginx_fabric="/etc/nginx/nginx-fabric.conf";
 
-nginx -c /etc/nginx/nginx-oauth.conf -g "pid $conf;" &
+/app/$APP &
 
-#curl "http://localhost/upstream_conf?add=&upstream=backend&server=$PAGES_URL&max_fails=0"
+if [ "$NETWORK" = "fabric" ]
+then
+    nginx_conf=$nginx_fabric;
+    echo This is the nginx conf = $nginx_conf;
+    echo fabric configuration set;
+fi
+
+nginx -c "$nginx_conf" -g "pid $pid;" &
 
 service amplify-agent start
 
 sleep 30
 
-while [ -f "$conf" ]
+while [ -f "$conf" ] &&  [ "$PID" ];
 do 
 	sleep 5;
-	print "in the while loop\n";
+	PID=`ps aux | grep $APP | grep -v grep`;
+	#echo "The python process: $PID"
 done
