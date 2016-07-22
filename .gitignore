@@ -6,3 +6,7 @@ nginx-repo.crt
 nginx-repo.key
 fabfile.pyc
 .env
+jmeter.log
+/letsencrypt
+/letsencrypt-etc
+/fabfile.py
