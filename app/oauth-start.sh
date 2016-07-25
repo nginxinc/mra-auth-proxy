@@ -1,29 +1,29 @@
 #!/bin/sh
-conf="/var/run/nginx.pid"    # /   (root directory)
+NGINX_PID="/var/run/nginx.pid"    # /   (root directory)
 APP="oauth-daemon.py"
-PID=`ps aux | grep $APP | grep -v grep`
 
-nginx_conf="/etc/nginx/nginx.conf";
-nginx_fabric="/etc/nginx/nginx-fabric.conf";
+NGINX_CONF="/etc/nginx/nginx.conf";
+NGINX_FABRIC="/etc/nginx/nginx-fabric.conf";
 
 /app/$APP &
 
 if [ "$NETWORK" = "fabric" ]
 then
-    nginx_conf=$nginx_fabric;
-    echo This is the nginx conf = $nginx_conf;
+    NGINX_CONF=$NGINX_FABRIC;
+    echo This is the nginx conf = $NGINX_CONF;
     echo fabric configuration set;
 fi
 
-nginx -c "$nginx_conf" -g "pid $pid;" &
+nginx -c "$NGINX_CONF" -g "pid $NGINX_PID;" &
 
 service amplify-agent start
 
 sleep 30
+APP_PID=`ps aux | grep $APP | grep -v grep`
 
-while [ -f "$conf" ] &&  [ "$PID" ];
+while [ -f "$NGINX_PID" ] &&  [ "$APP_PID" ];
 do 
 	sleep 5;
-	PID=`ps aux | grep $APP | grep -v grep`;
+	APP_PID=`ps aux | grep $APP | grep -v grep`;
 	#echo "The python process: $PID"
 done

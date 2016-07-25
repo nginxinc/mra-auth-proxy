@@ -38,7 +38,8 @@ RUN chown -R root:root /etc/letsencrypt && \
 	cd /usr/local && \
 	wget https://dl.eff.org/certbot-auto && \
 	chmod a+x certbot-auto && \
-	./certbot-auto
+	./certbot-auto --os-packages-only --noninteractive && \
+	cd /
 
 RUN wget -q -O /etc/ssl/nginx/CA.crt https://cs.nginx.com/static/files/CA.crt && \
 	wget -q -O - http://nginx.org/keys/nginx_signing.key | apt-key add - && \
