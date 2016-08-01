@@ -47,7 +47,7 @@ RUN wget -q -O /etc/ssl/nginx/CA.crt https://cs.nginx.com/static/files/CA.crt &&
 	printf "deb https://plus-pkgs.nginx.com/ubuntu `lsb_release -cs` nginx-plus\n" >/etc/apt/sources.list.d/nginx-plus.list
 
 # Install NGINX Plus
-RUN apt-get update && apt-get install -y nginx-plus
+RUN apt-get update && apt-get install -y nginx-plus-extras
 
 # Install Amplify
 RUN curl -sS -L -O  https://github.com/nginxinc/nginx-amplify-agent/raw/master/packages/install.sh && \
@@ -66,6 +66,7 @@ COPY ./nginx*.conf /etc/nginx/
 RUN rm -r /etc/nginx/conf.d/
 COPY ./conf.d /etc/nginx/conf.d
 COPY ./app/ /app
+RUN chmod -R 777 /app/cache
 RUN pip install -r /app/requirements.txt
 
 COPY ./app/ /app
