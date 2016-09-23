@@ -59,7 +59,6 @@ COPY ./status.html /usr/share/nginx/html/status.html
 RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
 	ln -sf /dev/stdout /var/log/nginx/error.log
 
-COPY ./nginx*.conf /etc/nginx/
 #COPY ./nginx-ssl.conf /etc/nginx/
 #COPY ./nginx-fabric.conf /etc/nginx/
 #COPY ./nginx.conf /etc/nginx/
@@ -68,8 +67,15 @@ COPY ./conf.d /etc/nginx/conf.d
 COPY ./app/ /app
 RUN chmod -R 777 /app/cache
 RUN pip install -r /app/requirements.txt
+COPY ./nginx /etc/nginx/
 
 COPY ./app/ /app
+
+# Install and run NGINX config generator
+RUN wget -q https://s3-us-west-1.amazonaws.com/fabric-model/config-generator/generate_config
+RUN chmod +x generate_config && \
+    ./generate_config -p /etc/nginx/fabric_config.yaml -t /etc/nginx/nginx-fabric-proxy-server.conf.j2 > /etc/nginx/nginx-fabric.conf
+
 CMD ["/app/oauth-start.sh"]
 
 EXPOSE 80 443 8888 9000 8889
