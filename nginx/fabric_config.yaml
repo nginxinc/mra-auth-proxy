@@ -16,6 +16,7 @@ services:
     server: 'svc.cluster.local service=_https._tcp.resizer.default'
     expose_external: true
     healthcheck: true
+    healthcheck_uri: /healthcheck
   uploader:
     server: 'svc.cluster.local service=_https._tcp.uploader.default'
     expose_external: true
