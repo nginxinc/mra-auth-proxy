@@ -1,28 +1,34 @@
 name: auth-proxy
 resolver:
-  host: 10.0.0.10
+  host: 198.51.100.1 198.51.100.2 198.51.100.3
   ttl: 1s
-root: /inginious-pages/web
+external_domain_name: mra.nginxps.com
+internal_domain_name: marathon.mesos
 services:
   album-manager:
-    server: 'svc.cluster.local service=_https._tcp.album-manager.default'
+    server: marathon.mesos service=_album-manager._tcp
     expose_external: true
     healthcheck: true
+    server_block: true
   pages:
-    server: 'svc.cluster.local service=_https._tcp.pages.default'
+    server: marathon.mesos service=_pages._tcp
     expose_external: true
     healthcheck: true
+    server_block: true
   resizer:
-    server: 'svc.cluster.local service=_https._tcp.resizer.default'
-    expose_external: true
+    server: marathon.mesos service=_resizer._tcp
+    expose_external: false
     healthcheck: true
     healthcheck_uri: /healthcheck
+    server_block: true
   uploader:
-    server: 'svc.cluster.local service=_https._tcp.uploader.default'
+    server: marathon.mesos service=_uploader._tcp
     expose_external: true
     healthcheck: true
+    server_block: true
   user-manager:
-    server: 'svc.cluster.local service=_https._tcp.user-manager.default'
-    expose_external: true
+    server: marathon.mesos service=_user-manager._tcp
+    expose_external: false
     healthcheck: true
     healthcheck_uri: /v1/
+    server_block: true

@@ -88,7 +88,8 @@ def authenticate(auth_token, auth_provider):
 def get_or_create_user(auth_provider, auth_result):
     url = request.headers.get('User-Manager-URL')
     response = requests.get((url + '/{}/{}').format(auth_provider, auth_result['id']))
-
+    app.logger.debug((url + '/{}/{}').format(auth_provider, auth_result['id']))
+    
     if (response.status_code == 200):
         return response.json()
     elif (response.status_code == 404):
