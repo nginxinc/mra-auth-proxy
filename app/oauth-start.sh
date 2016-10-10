@@ -15,13 +15,6 @@ then
     echo fabric configuration set;
 fi
 
-if [ "$NETWORK" = "fabric2" ]
-then
-    NGINX_CONF=$NGINX_FABRIC2;
-    echo This is the nginx conf = $NGINX_CONF;
-    echo fabric2 configuration set;
-fi
-
 
 nginx -c "$NGINX_CONF" -g "pid $NGINX_PID;" &
 

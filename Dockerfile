@@ -64,7 +64,6 @@ COPY ./app/ /app
 RUN chmod -R 777 /app/cache
 RUN pip install -r /app/requirements.txt
 COPY ./nginx /etc/nginx/
-COPY ./nginx/nginx-fabric.conf /etc/nginx/nginx-fabric-2.conf
 
 # Install and run NGINX config generator
 RUN wget -q https://s3-us-west-1.amazonaws.com/fabric-model/config-generator/generate_config
