@@ -42,7 +42,7 @@ server {
     include		nginx-ssl.conf;
     rewrite_log on;
     
-    status_zone auth_proxy;
+    status_zone {{name}};
     
     keepalive_timeout	3600s;
     keepalive_disable	none;
