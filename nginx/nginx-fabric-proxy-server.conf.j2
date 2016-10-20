@@ -28,7 +28,7 @@
     }
 {%- endmacro %}
 
-{% macro server_block(name, healthcheck, healthcheck_uri, external_domain_name='', internal_domain_name='') -%}
+{% macro server_block(name, healthcheck='', healthcheck_uri='', external_domain_name='', internal_domain_name='') -%}
 server {
     listen              80;
     listen              443 ssl http2;
@@ -199,6 +199,6 @@ http {
     }
     
     {% for name, service in services.iteritems() if service.server_block%}
-            {{ server_block(name, external_domain_name=external_domain_name, internal_domain_name=internal_domain_name) }}
+            {{ server_block(name, healthcheck=healthcheck, healthcheck_uri=healthcheck_uri, external_domain_name=external_domain_name, internal_domain_name=internal_domain_name) }}
     {% endfor %}
 }
