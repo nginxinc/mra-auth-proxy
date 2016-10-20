@@ -1,33 +1,40 @@
 name: auth-proxy
 resolver:
-  host: 198.51.100.1 198.51.100.2 198.51.100.3
+  host: 10.255.3.14
   ttl: 1s
 external_domain_name: mra.nginxps.com
+#internal_domain_name: internal.ec2
 internal_domain_name: marathon.mesos
 services:
   album-manager:
-    server: marathon.mesos service=_album-manager._tcp
-    expose_external: true
+    server: album-manager
+    expose_external: false
     healthcheck: true
     server_block: true
   pages:
-    server: marathon.mesos service=_pages._tcp
+    server: pages
     expose_external: true
     healthcheck: true
     server_block: true
   resizer:
-    server: marathon.mesos service=_resizer._tcp
+    server: resizer
     expose_external: false
     healthcheck: true
     healthcheck_uri: /healthcheck
     server_block: true
   uploader:
-    server: marathon.mesos service=_uploader._tcp
-    expose_external: true
+    server: uploader
+    expose_external: false
     healthcheck: true
     server_block: true
   user-manager:
-    server: marathon.mesos service=_user-manager._tcp
+    server: user-manager
+    expose_external: false
+    healthcheck: true
+    healthcheck_uri: /v1/
+    server_block: true
+  router-mesh:
+    server: router-mesh
     expose_external: false
     healthcheck: true
     healthcheck_uri: /v1/

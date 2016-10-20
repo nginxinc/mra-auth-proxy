@@ -1,5 +1,5 @@
 tag = ngrefarch/auth-proxy:mesos
-volumes = -v $(CURDIR)/app:/app -v $(CURDIR)/nginx-oauth.conf:/etc/nginx/nginx-oauth.conf
+volumes = -v $(CURDIR)/app:/app -v $(CURDIR)/nginx:/etc/nginx
 ports = -p 80:80 -p 443:443
 env = --env-file=.env
 
