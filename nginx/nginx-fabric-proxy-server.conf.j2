@@ -118,7 +118,7 @@ http {
 
     {% for name, service in services.iteritems() %}
     upstream {{ name }} {
-        server        {{ service.server }}.{{internal_domain_name}} resolve;
+        server        {{ service.server }} resolve;
         zone backend  64k;
         least_time 		last_byte;
         keepalive 		300;
@@ -199,6 +199,6 @@ http {
     }
     
     {% for name, service in services.iteritems() if service.server_block%}
-            {{ server_block(name, healthcheck=healthcheck, healthcheck_uri=healthcheck_uri, external_domain_name=external_domain_name, internal_domain_name=internal_domain_name) }}
+            {{ server_block(name, service.healthcheck, service.healthcheck_uri, external_domain_name=external_domain_name, internal_domain_name=internal_domain_name) }}
     {% endfor %}
 }

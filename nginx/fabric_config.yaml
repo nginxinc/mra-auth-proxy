@@ -8,34 +8,34 @@ external_domain_name: mra.nginxps.com
 internal_domain_name: marathon.mesos
 services:
   album-manager:
-    server: album-manager
+    server: 'marathon.mesos service=_album-manager._tcp'
     expose_external: false
     healthcheck: true
     server_block: true
   pages:
-    server: pages
+    server: 'marathon.mesos service=_pages._tcp'
     expose_external: true
     healthcheck: true
     server_block: true
   resizer:
-    server: resizer
+    server: 'marathon.mesos service=_resizer._tcp'
     expose_external: false
     healthcheck: true
     healthcheck_uri: /healthcheck
     server_block: true
   uploader:
-    server: uploader
+    server: 'marathon.mesos service=_uploader._tcp'
     expose_external: false
     healthcheck: true
     server_block: true
   user-manager:
-    server: user-manager
+    server: 'marathon.mesos service=_user-manager._tcp'
     expose_external: false
     healthcheck: true
     healthcheck_uri: /v1/
     server_block: true
   router-mesh:
-    server: router-mesh
+    server: 'marathon.mesos service=_router-mesh._tcp'
     expose_external: false
     healthcheck: true
     healthcheck_uri: /v1/
