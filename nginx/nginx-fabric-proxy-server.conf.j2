@@ -118,7 +118,7 @@ http {
 
     {% for name, service in services.iteritems() %}
     upstream {{ name }} {
-        server        {{ service.server }} resolve;
+        server        {{ service.server }}.{{internal_domain_name}} resolve;
         zone backend  64k;
         least_time 		last_byte;
         keepalive 		300;
