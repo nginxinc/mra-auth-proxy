@@ -23,11 +23,6 @@ services:
     healthcheck: true
     healthcheck_uri: /healthcheck
     server_block: true
-  uploader:
-    server: 'marathon.mesos service=_uploader._tcp'
-    expose_external: false
-    healthcheck: true
-    server_block: true
   user-manager:
     server: 'marathon.mesos service=_user-manager._tcp'
     expose_external: false
