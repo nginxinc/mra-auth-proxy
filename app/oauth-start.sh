@@ -5,6 +5,7 @@ APP="oauth-daemon.py"
 NGINX_CONF="/etc/nginx/nginx.conf";
 NGINX_FABRIC="/etc/nginx/nginx-fabric.conf";
 NGINX_FABRIC2="/etc/nginx/nginx-fabric-2.conf";
+NGINX="nginx";
 
 /app/$APP &
 
@@ -15,8 +16,13 @@ then
     echo fabric configuration set;
 fi
 
+if [ "$DEBUG" = "true" ]
+then
+    NGINX="nginx-debug";
+    echo System is set to DEBUG;
+fi
 
-nginx -c "$NGINX_CONF" -g "pid $NGINX_PID;" &
+$NGINX -c "$NGINX_CONF" -g "pid $NGINX_PID;" &
 
 service amplify-agent start
 
@@ -31,7 +37,7 @@ service amplify-agent start
 sleep 5
 APP_PID=`ps aux | grep "$APP" | grep -v grep`
 
-while [ -f "$NGINX_PID" ] &&  [ "$APP_PID" ];
+while [ "$APP_PID" ];
 do 
 	sleep 5;
 	APP_PID=`ps aux | grep "$APP" | grep -v grep`;

@@ -107,10 +107,10 @@ http {
     include nginx-gz.conf;
 
     resolver {{ resolver.host }} valid={{ resolver.ttl }};  #use local DNS and override TTL to whatever value makes sense
-    resolver_timeout 2s;
+    resolver_timeout 10s;
     client_max_body_size 30M;
     
-    #include /etc/nginx/conf.d/*.conf;
+    proxy_cache_path /app/cache levels=1:2 keys_zone=oauth_cache:10m max_size=10m inactive=15s use_temp_path=off;
 
     #DDOS Configs
     limit_req_zone $binary_remote_addr zone=ddosrequests:25m rate=100r/s;
@@ -129,8 +129,10 @@ http {
         listen 80;
 
         location /v1/users {
-			#proxy_cache oauth_cache;
-			#proxy_cache_min_uses 3;
+			proxy_cache oauth_cache;
+			proxy_cache_min_uses 3;
+			proxy_cache_valid      200  30s;
+			proxy_cache_use_stale  error timeout invalid_header updating http_500 http_502 http_503 http_504;
             proxy_pass https://user-manager;
             proxy_set_header Host user-manager.marathon.mesos;
 
