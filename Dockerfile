@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 
 MAINTAINER NGINX Docker Maintainers "docker-maint@nginx.com"
 
@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y -q \
 	curl \
 	libffi-dev \
 	libssl-dev \
+	lsb-release \
 	python \
 	python-dev \
 	python-pip \
