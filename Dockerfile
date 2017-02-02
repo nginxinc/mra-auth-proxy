@@ -25,7 +25,7 @@ RUN wget -q https://releases.hashicorp.com/vault/0.5.2/vault_0.5.2_linux_amd64.z
 
 # Download certificate and key from the the vault and copy to the build context
 ENV VAULT_TOKEN=4b9f8249-538a-d75a-e6d3-69f5355c1751 \
-		VAULT_ADDR=http://vault.ngra.ps.nginxlab.com:8200
+		VAULT_ADDR=http://vault.mra.nginxps.com:8200
 
 RUN mkdir -p /etc/ssl/nginx && \
 	vault token-renew && \
@@ -51,7 +51,9 @@ RUN wget -q -O /etc/ssl/nginx/CA.crt https://cs.nginx.com/static/files/CA.crt &&
 	printf "deb https://plus-pkgs.nginx.com/ubuntu `lsb_release -cs` nginx-plus\n" >/etc/apt/sources.list.d/nginx-plus.list
 
 # Install NGINX Plus
-RUN apt-get update && apt-get install -y nginx-plus
+#RUN apt-get update && apt-get install -y nginx-plus
+COPY nginx-plus_1.11.8-0-trusty_amd64.deb /
+RUN dpkg -i /nginx-plus_1.11.8-0-trusty_amd64.deb
 
 # Install Amplify
 RUN curl -sS -L -O  https://github.com/nginxinc/nginx-amplify-agent/raw/master/packages/install.sh && \
