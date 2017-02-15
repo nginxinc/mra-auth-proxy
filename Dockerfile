@@ -65,9 +65,10 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
 
 RUN rm -r /etc/nginx/conf.d/
 COPY ./app/ /app
-RUN chmod -R 777 /app/cache
 RUN pip install -r /app/requirements.txt
 COPY ./nginx /etc/nginx/
+RUN mkdir /app/cache && \
+	chown -R nginx /app/cache
 
 # Install and run NGINX config generator
 RUN wget -q https://s3-us-west-1.amazonaws.com/fabric-model/config-generator/generate_config
