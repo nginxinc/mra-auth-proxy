@@ -130,7 +130,7 @@ http {
 
         location /v1/users {
 			proxy_cache oauth_cache;
-			proxy_cache_min_uses 3;
+			#proxy_cache_min_uses 3;
 			proxy_cache_valid      200  30s;
 			proxy_cache_use_stale  error timeout invalid_header updating http_500 http_502 http_503 http_504;
             proxy_pass https://user-manager;
