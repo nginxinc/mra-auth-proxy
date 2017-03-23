@@ -34,6 +34,11 @@ services:
     healthcheck: true
     healthcheck_uri: /v1/
     server_block: true
+  content-service:
+    server: 'content-service:443'
+    expose_external: false
+    healthcheck: true
+    server_block: true
 #  router-mesh:
 #    server: 'router-mesh:8889'
 #    expose_external: false

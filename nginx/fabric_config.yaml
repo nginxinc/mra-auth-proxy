@@ -40,3 +40,8 @@ services:
     healthcheck: true
     healthcheck_uri: /
     server_block: true
+  content-service:
+    server: 'marathon.mesos service=_content-service._tcp'
+    expose_external: true
+    healthcheck: true
+    server_block: true
