@@ -45,4 +45,3 @@ services:
     expose_external: true
     healthcheck: true
     server_block: true
-    

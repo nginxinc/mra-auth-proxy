@@ -77,4 +77,4 @@ COPY ./app/ /app
 
 CMD ["/app/oauth-start.sh"]
 
-EXPOSE 80 443 8888 9000 8889
+EXPOSE 80 443 8888 9000 8889 28015
