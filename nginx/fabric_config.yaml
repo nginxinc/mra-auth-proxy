@@ -45,3 +45,8 @@ services:
     expose_external: true
     healthcheck: true
     server_block: true
+  content-db:
+     server: 'marathon.mesos service=_content-db._tcp'
+     expose_external: true
+     healthcheck: true
+     server_block: true
