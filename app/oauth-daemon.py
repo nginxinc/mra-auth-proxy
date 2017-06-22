@@ -1,8 +1,4 @@
 #!/usr/bin/python
-# ''''which python2 >/dev/null && exec python2 "$0" "$@" # '''
-# ''''which python  >/dev/null && exec python  "$0" "$@" # '''
-
-# Copyright (C) 2014-2015 Nginx, Inc.
 
 import json
 import requests
@@ -90,9 +86,9 @@ def get_or_create_user(auth_provider, auth_result):
     response = requests.get((url + '/{}/{}').format(auth_provider, auth_result['id']))
     app.logger.debug((url + '/{}/{}').format(auth_provider, auth_result['id']))
     
-    if (response.status_code == 200):
+    if response.status_code == 200:
         return response.json()
-    elif (response.status_code == 404):
+    elif response.status_code == 404:
         payload = {
             'name': auth_result['name'],
             'email': auth_result['email'],
@@ -137,13 +133,8 @@ def google(token):
 
     try:
         idinfo = client.verify_id_token(token, google_client_id)
-        # If multiple clients access the backend server:
-        # if idinfo['aud'] not in [ANDROID_CLIENT_ID, IOS_CLIENT_ID, WEB_CLIENT_ID]:
-        # 	raise crypt.AppIdentityError("Unrecognized client.")
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
             raise crypt.AppIdentityError("Wrong issuer.")
-        # if idinfo['hd'] != APPS_DOMAIN_NAME:
-        # 	raise crypt.AppIdentityError("Wrong hosted domain.")
 
         app.logger.debug(idinfo)
 
