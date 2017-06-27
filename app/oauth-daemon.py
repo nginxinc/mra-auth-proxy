@@ -12,6 +12,13 @@ import os
 import redis
 import traceback
 
+#
+#  oauth-daemon.py
+#  AuthProxy
+#
+#  Copyright © 2017 NGINX Inc. All rights reserved.
+#
+
 app = Flask(__name__)
 
 if os.environ.get('REDIS_ENABLED'):
@@ -21,6 +28,7 @@ if os.environ.get('REDIS_ENABLED'):
     )
 else:
     r = None
+
 
 @app.route('/')
 def index():
@@ -85,7 +93,7 @@ def get_or_create_user(auth_provider, auth_result):
     url = request.headers.get('User-Manager-URL')
     response = requests.get((url + '/{}/{}').format(auth_provider, auth_result['id']))
     app.logger.debug((url + '/{}/{}').format(auth_provider, auth_result['id']))
-    
+
     if response.status_code == 200:
         return response.json()
     elif response.status_code == 404:
