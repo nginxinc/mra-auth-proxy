@@ -16,7 +16,7 @@ import traceback
 #  oauth-daemon.py
 #  AuthProxy
 #
-#  Copyright © 2017 NGINX Inc. All rights reserved.
+#  Copyright (C) 2017 NGINX Inc. All rights reserved.
 #
 
 app = Flask(__name__)
