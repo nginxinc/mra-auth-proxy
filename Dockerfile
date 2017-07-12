@@ -3,7 +3,7 @@ FROM ubuntu:16.04
 MAINTAINER NGINX Docker Maintainers "docker-maint@nginx.com"
 
 ENV USE_NGINX_PLUS true
-ENV AMPLIFY_KEY ''
+
 
 # Set the debconf front end to Noninteractive
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
