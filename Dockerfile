@@ -2,7 +2,7 @@ FROM ubuntu:16.04
 
 MAINTAINER NGINX Docker Maintainers "docker-maint@nginx.com"
 
-ENV USE_NGINX_PLUS bananas
+ENV USE_NGINX_PLUS true
 
 
 # Set the debconf front end to Noninteractive
@@ -23,13 +23,13 @@ RUN apt-get update && apt-get install -y -q \
 	wget
 
 # Get SSL/letsencrypt files required for installation
-#COPY ./letsencrypt-etc /etc/letsencrypt
-#RUN chown -R root:root /etc/letsencrypt && \
-#	cd /usr/local && \
-#	wget https://dl.eff.org/certbot-auto && \
-#	chmod a+x certbot-auto && \
-#	./certbot-auto --os-packages-only --noninteractive && \
-#	cd /
+COPY ./letsencrypt-etc /etc/letsencrypt
+RUN chown -R root:root /etc/letsencrypt && \
+	cd /usr/local && \
+	wget https://dl.eff.org/certbot-auto && \
+	chmod a+x certbot-auto && \
+	./certbot-auto --os-packages-only --noninteractive && \
+	cd /
 
 # Install vault client
 RUN wget -q https://releases.hashicorp.com/vault/0.5.2/vault_0.5.2_linux_amd64.zip && \
@@ -46,7 +46,11 @@ RUN mkdir -p /etc/ssl/nginx && \
 	vault read -field=value secret/ssl/csr.pem > /etc/ssl/nginx/csr.pem && \
 	vault read -field=value secret/ssl/certificate.pem > /etc/ssl/nginx/certificate.pem && \
 	vault read -field=value secret/ssl/key.pem > /etc/ssl/nginx/key.pem && \
-	vault read -field=value secret/ssl/dhparam.pem > /etc/ssl/nginx/dhparam.pem
+	vault read -field=value secret/ssl/dhparam.pem > /etc/ssl/nginx/dhparam.pem && \
+	vault read -field=value secret/letsencrypt/cert.pem > /etc/letsencrypt/archive/mra.nginxps.com/cert2.pem && \
+	vault read -field=value secret/letsencrypt/chain.pem > /etc/letsencrypt/archive/mra.nginxps.com/chain2.pem && \
+	vault read -field=value secret/letsencrypt/fullchain.pem > /etc/letsencrypt/archive/mra.nginxps.com/fullchain2.pem && \
+	vault read -field=value secret/letsencrypt/privkey.pem > /etc/letsencrypt/archive/mra.nginxps.com/privkey2.pem
 
 # Install nginx
 ADD install-nginx.sh /usr/local/bin/
