@@ -168,7 +168,7 @@ http {
     }
     
     {% for name, service in services.iteritems() if service.server_block%}
-            {{ server_block(name, service.healthcheck, service.healthcheck_uri, external_domain_name=external_domain_name, internal_domain_name=internal_domain_name, service.protocol) }}
+            {{ server_block(name, service.healthcheck, service.healthcheck_uri, external_domain_name=external_domain_name, internal_domain_name=internal_domain_name, protocol=service.protocol) }}
     {% endfor %}
 }
 
