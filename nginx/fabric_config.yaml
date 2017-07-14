@@ -60,7 +60,8 @@ services:
     server_block: true
     protocol: https
   fake-s3:
-    server: 'marathon.mesos service=_fake-s3._tcp'
+    server: 'marathon.mesos'
+    service: 'service=_fake-s3._tcp'
     expose_external: true
     healthcheck: false
     server_block: true
