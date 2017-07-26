@@ -19,6 +19,11 @@ server {
     keepalive_disable	none;
     keepalive_requests  100000;
 
+        location ~ /.well-known {
+            allow all;
+            root /usr/share/nginx/html;
+        }
+
 
     location / {
         proxy_pass {{ protocol }}://{{ name }};
@@ -98,6 +103,9 @@ http {
 
     server {
         listen 80;
+        server_name {{ name }} mra.nginxps.com;
+        status_zone {{ name }};
+        rewrite_log on;
 
         location /v1/users {
 			proxy_cache oauth_cache;
@@ -123,13 +131,20 @@ http {
     		#deny  all;
 	    }
 
+        location ~ /.well-known {
+            allow all;
+            root /usr/share/nginx/html;
+        }
+
+        include default-location.conf;
+
         location / {
             return         301 https://$host$request_uri;
         }
     }
 
     server {
-        listen       443 ssl http2	default_server;
+        listen       443 ssl http2 default_server;
 
         ssl_certificate      /etc/letsencrypt/live/mra.nginxps.com/fullchain.pem;
         ssl_certificate_key  /etc/letsencrypt/live/mra.nginxps.com/privkey.pem;
@@ -141,7 +156,7 @@ http {
         keepalive_disable	none;
         keepalive_requests  100000;
 
-        server_name {{ name }};
+        server_name {{ name }} mra.nginxps.com;
         status_zone {{ name }};
 
         {% if root %}

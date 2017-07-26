@@ -9,4 +9,5 @@ fabfile.pyc
 jmeter.log
 /letsencrypt
 /letsencrypt-etc
+vault_env.sh
 
