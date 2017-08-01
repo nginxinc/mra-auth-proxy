@@ -2,6 +2,9 @@ FROM ubuntu:16.04
 
 MAINTAINER NGINX Docker Maintainers "docker-maint@nginx.com"
 
+ENV USE_NGINX_PLUS true
+
+
 # Set the debconf front end to Noninteractive
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
@@ -20,7 +23,7 @@ RUN apt-get update && apt-get install -y -q \
 	wget
 
 # Get SSL/letsencrypt files required for installation
-COPY ./letsencrypt-etc /etc/letsencrypt
+COPY ./letsencrypt-etc vault_env.sh /etc/letsencrypt/
 RUN chown -R root:root /etc/letsencrypt && \
 	cd /usr/local && \
 	wget https://dl.eff.org/certbot-auto && \
@@ -30,13 +33,10 @@ RUN chown -R root:root /etc/letsencrypt && \
 
 # Install vault client
 RUN wget -q https://releases.hashicorp.com/vault/0.5.2/vault_0.5.2_linux_amd64.zip && \
-	unzip -d /usr/local/bin vault_0.5.2_linux_amd64.zip
-
-# Download certificate and key from the the vault and copy to the build context
-ENV VAULT_TOKEN=4b9f8249-538a-d75a-e6d3-69f5355c1751 \
-		VAULT_ADDR=http://vault.mra.nginxps.com:8200
-
-RUN mkdir -p /etc/ssl/nginx && \
+	unzip -d /usr/local/bin vault_0.5.2_linux_amd64.zip && \
+	. /etc/letsencrypt/vault_env.sh && \
+	env && \
+	mkdir -p /etc/ssl/nginx && \
 	vault token-renew && \
 	vault read -field=value secret/nginx-repo.crt > /etc/ssl/nginx/nginx-repo.crt && \
 	vault read -field=value secret/nginx-repo.key > /etc/ssl/nginx/nginx-repo.key && \
@@ -49,13 +49,10 @@ RUN mkdir -p /etc/ssl/nginx && \
 	vault read -field=value secret/letsencrypt/fullchain.pem > /etc/letsencrypt/archive/mra.nginxps.com/fullchain2.pem && \
 	vault read -field=value secret/letsencrypt/privkey.pem > /etc/letsencrypt/archive/mra.nginxps.com/privkey2.pem
 
-RUN wget -q -O /etc/ssl/nginx/CA.crt https://cs.nginx.com/static/files/CA.crt && \
-	wget -q -O - http://nginx.org/keys/nginx_signing.key | apt-key add - && \
-	wget -q -O /etc/apt/apt.conf.d/90nginx https://cs.nginx.com/static/files/90nginx && \
-	printf "deb https://plus-pkgs.nginx.com/ubuntu `lsb_release -cs` nginx-plus\n" >/etc/apt/sources.list.d/nginx-plus.list
-
-# Install NGINX Plus
-RUN apt-get update && apt-get install -y nginx-plus
+# Install nginx
+ADD install-nginx.sh /usr/local/bin/
+COPY ./nginx /etc/nginx/
+RUN /usr/local/bin/install-nginx.sh
 
 # forward request logs to Docker log collector
 RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
@@ -64,14 +61,9 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
 RUN rm -r /etc/nginx/conf.d/
 COPY ./app/ /app
 RUN pip install -r /app/requirements.txt
-COPY ./nginx /etc/nginx/
 RUN mkdir /app/cache && \
 	chown -R nginx /app/cache
 
-# Install and run NGINX config generator
-RUN wget -q https://s3-us-west-1.amazonaws.com/fabric-model/config-generator/generate_config
-RUN chmod +x generate_config && \
-    ./generate_config -p /etc/nginx/fabric_config.yaml -t /etc/nginx/nginx-fabric-proxy-server.conf.j2 > /etc/nginx/nginx-fabric.conf
 
 COPY ./app/ /app
 
