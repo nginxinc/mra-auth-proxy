@@ -2,13 +2,11 @@ FROM ubuntu:16.04
 
 MAINTAINER NGINX Docker Maintainers "docker-maint@nginx.com"
 
-ENV USE_NGINX_PLUS true
-
+ENV USE_NGINX_PLUS false
 
 # Set the debconf front end to Noninteractive
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-
-RUN apt-get update && apt-get install -y -q \
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
+    apt-get update && apt-get install -y -q \
 	apt-transport-https \
 	jq \
 	vim \
@@ -29,13 +27,11 @@ RUN chown -R root:root /etc/letsencrypt && \
 	wget https://dl.eff.org/certbot-auto && \
 	chmod a+x certbot-auto && \
 	./certbot-auto --os-packages-only --noninteractive && \
-	cd /
-
+	cd / && \
 # Install vault client
-RUN wget -q https://releases.hashicorp.com/vault/0.5.2/vault_0.5.2_linux_amd64.zip && \
+    wget -q https://releases.hashicorp.com/vault/0.5.2/vault_0.5.2_linux_amd64.zip && \
 	unzip -d /usr/local/bin vault_0.5.2_linux_amd64.zip && \
 	. /etc/letsencrypt/vault_env.sh && \
-	env && \
 	mkdir -p /etc/ssl/nginx && \
 	vault token-renew && \
 	vault read -field=value secret/nginx-repo.crt > /etc/ssl/nginx/nginx-repo.crt && \
@@ -52,16 +48,15 @@ RUN wget -q https://releases.hashicorp.com/vault/0.5.2/vault_0.5.2_linux_amd64.z
 # Install nginx
 ADD install-nginx.sh /usr/local/bin/
 COPY ./nginx /etc/nginx/
-RUN /usr/local/bin/install-nginx.sh
-
+RUN /usr/local/bin/install-nginx.sh && \
 # forward request logs to Docker log collector
-RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
+    ln -sf /dev/stdout /var/log/nginx/access.log && \
 	ln -sf /dev/stderr /var/log/nginx/error.log
 
-RUN rm -r /etc/nginx/conf.d/
+#RUN rm -r /etc/nginx/conf.d/
 COPY ./app/ /app
-RUN pip install -r /app/requirements.txt
-RUN mkdir /app/cache && \
+RUN pip install -r /app/requirements.txt && \
+    mkdir /app/cache && \
 	chown -R nginx /app/cache
 
 
