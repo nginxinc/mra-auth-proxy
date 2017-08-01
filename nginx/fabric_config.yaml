@@ -8,52 +8,60 @@ external_domain_name: mra.nginxps.com
 internal_domain_name: marathon.mesos
 services:
   album-manager:
-    server: 'marathon.mesos service=_album-manager._tcp'
+    server: 'marathon.mesos'
+    service: 'service=_album-manager._tcp'
     expose_external: true
     healthcheck: true
     server_block: true
     protocol: https
   pages:
-    server: 'marathon.mesos service=_pages._tcp'
+    server: 'marathon.mesos'
+    service: 'service=_pages._tcp'
     expose_external: true
     healthcheck: true
     server_block: true
     protocol: https
   resizer:
-    server: 'marathon.mesos service=_resizer._tcp'
+    server: 'marathon.mesos'
+    service: 'service=_resizer._tcp'
     expose_external: true
     healthcheck: true
     healthcheck_uri: /healthcheck
     server_block: true
     protocol: https
   uploader:
-    server: 'marathon.mesos service=_uploader._tcp'
+    server: 'marathon.mesos'
+    service: 'service=_uploader._tcp'
     expose_external: true
     healthcheck: true
     server_block: true
     protocol: https
   user-manager:
-    server: 'marathon.mesos service=_user-manager._tcp'
+    server: 'marathon.mesos'
+    service: 'service=_user-manager._tcp'
     expose_external: true
     healthcheck: true
     healthcheck_uri: /v1/
     server_block: true
     protocol: https
   router-mesh:
-    server: 'marathon.mesos service=_router-mesh._tcp'
+    server: 'marathon.mesos'
+    service: 'service=_router-mesh._tcp'
     expose_external: true
     healthcheck: false
     healthcheck_uri: /
     server_block: true
     protocol: https
   content-service:
-    server: 'marathon.mesos service=_content-service._tcp'
+    server: 'marathon.mesos'
+    service: 'service=_content-service._tcp'
     expose_external: true
     healthcheck: true
     server_block: true
     protocol: https
   fake-s3:
-    server: 'marathon.mesos service=_fake-s3._tcp'
+    server: 'marathon.mesos'
+    service: 'service=_fake-s3._tcp'
     expose_external: true
     healthcheck: false
     server_block: true
