@@ -37,6 +37,9 @@ def index():
         auth_provider = request.headers.get('Auth-Provider')
         auth_fields = request.headers.get('Auth-Fields')
 
+        if auth_token is None or auth_provider is None:
+            raise crypt.AppIdentityError("auth_token or auth_provider is None")
+
         if r is not None:
             auth_result = cached_authenticate(auth_token, auth_provider)
         else:

@@ -3,7 +3,7 @@
 server {
     listen              80;
     listen              443 ssl http2;
-    server_name  {{ name }}.{{external_domain_name}};
+    server_name  {{ name }}{% if external_domain_name != None %}.{{external_domain_name}}{% endif %};
 
     ssl_certificate      /etc/letsencrypt/live/mra.nginxps.com/fullchain.pem;
     ssl_certificate_key  /etc/letsencrypt/live/mra.nginxps.com/privkey.pem;
@@ -12,9 +12,9 @@ server {
 
     include		nginx-ssl.conf;
     rewrite_log on;
-    
+
     status_zone {{name}};
-    
+
     keepalive_timeout	3600s;
     keepalive_disable	none;
     keepalive_requests  100000;
@@ -27,7 +27,7 @@ server {
 
     location / {
         proxy_pass {{ protocol }}://{{ name }};
-        proxy_set_header Host {{ name }}.{{internal_domain_name}};
+        proxy_set_header Host {{ name }}{% if internal_domain_name != None %}.{{ internal_domain_name }}{% endif %};
 
         proxy_ssl_session_reuse 	on;
         proxy_ssl_protocols         TLSv1.2;
@@ -45,7 +45,7 @@ server {
     location /health-check-{{ name }}	{
         internal;
         proxy_pass {{ protocol }}://{{ name }};
-        proxy_set_header Host {{ name }}.{{internal_domain_name}};
+        proxy_set_header Host {{ name }}{% if internal_domain_name != '' %}.{{ internal_domain_name }}{% endif %};
 
         proxy_ssl_session_reuse 	on;
         proxy_ssl_protocols         TLSv1.2;
@@ -94,7 +94,7 @@ http {
 
     {% for name, service in services.iteritems() %}
     upstream {{ name }} {
-        server        {{ service.server }} {{service.service}} resolve;
+        server        {{ service.server }} {% if service.service != '' %}{{ service.service }}{% endif %} resolve;
         zone backend  64k;
         least_time 		last_byte;
         keepalive 		300;
@@ -138,9 +138,9 @@ http {
 
         include default-location.conf;
 
-        location / {
-            return         301 https://$host$request_uri;
-        }
+#        location / {
+#            return         301 https://$host$request_uri;
+#        }
     }
 
     server {
@@ -189,7 +189,7 @@ http {
 
 stream{
     upstream content-db {
-        server        content-db.marathon.mesos:28015 resolve;
+        server        content-db{% if internal_domain_name %}.{{ internal_domain_name }}{% endif %}:28015 resolve;
         zone stream  64k;
     }
 
