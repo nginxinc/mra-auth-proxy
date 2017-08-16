@@ -3,9 +3,9 @@ FROM ubuntu:16.04
 MAINTAINER NGINX Docker Maintainers "docker-maint@nginx.com"
 
 ENV USE_NGINX_PLUS=true \
-    USE_VAULT=false \
+    USE_VAULT=true \
     # USE_LOCAL: set to true when you want to run the MRA locally
-    USE_LOCAL=true
+    USE_LOCAL=false
 
 COPY ./letsencrypt-etc vault_env.sh /etc/letsencrypt/
 COPY nginx/ssl/* /etc/ssl/nginx/
@@ -41,9 +41,9 @@ RUN /usr/local/bin/install-nginx.sh && \
     ln -sf /dev/stderr /var/log/nginx/error.log
 
 COPY ./app/ /usr/src/app
-RUN pip install -r /usr/src/app/requirements.txt
+RUN pip install -r /usr/src/app/requirements.txt && \
 #    mkdir /app/cache && \
-#    chown -R nginx /app/cache
+    chown -R nginx /usr/src/app/cache
 
 CMD ["/usr/src/app/oauth-start.sh"]
 

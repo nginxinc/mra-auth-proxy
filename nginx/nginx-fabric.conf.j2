@@ -58,7 +58,7 @@ http {
     resolver_timeout 10s;
     client_max_body_size 30M;
     
-    proxy_cache_path /app/cache levels=1:2 keys_zone=oauth_cache:10m max_size=10m inactive=15s use_temp_path=off;
+    proxy_cache_path /usr/src/app/cache levels=1:2 keys_zone=oauth_cache:10m max_size=10m inactive=15s use_temp_path=off;
 
     #DDOS Configs
     limit_req_zone $binary_remote_addr zone=ddosrequests:25m rate=100r/s;

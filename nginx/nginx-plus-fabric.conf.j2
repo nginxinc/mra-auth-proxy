@@ -45,7 +45,7 @@ server {
     location /health-check-{{ name }}	{
         internal;
         proxy_pass {{ protocol }}://{{ name }};
-        proxy_set_header Host {{ name }}{% if internal_domain_name != '' %}.{{ internal_domain_name }}{% endif %};
+        proxy_set_header Host {{ name }}{% if internal_domain_name != None %}.{{ internal_domain_name }}{% endif %};
 
         proxy_ssl_session_reuse 	on;
         proxy_ssl_protocols         TLSv1.2;
@@ -86,7 +86,7 @@ http {
     resolver_timeout 10s;
     client_max_body_size 30M;
     
-    proxy_cache_path /app/cache levels=1:2 keys_zone=oauth_cache:10m max_size=10m inactive=15s use_temp_path=off;
+    proxy_cache_path /usr/src/app/cache levels=1:2 keys_zone=oauth_cache:10m max_size=10m inactive=15s use_temp_path=off;
 
     #DDOS Configs
     limit_req_zone $binary_remote_addr zone=ddosrequests:25m rate=100r/s;
@@ -94,7 +94,7 @@ http {
 
     {% for name, service in services.iteritems() %}
     upstream {{ name }} {
-        server        {{ service.server }} {% if service.service != '' %}{{ service.service }}{% endif %} resolve;
+        server        {{ service.server }} {% if service.service != None %}{{ service.service }}{% endif %} resolve;
         zone backend  64k;
         least_time 		last_byte;
         keepalive 		300;
@@ -103,9 +103,9 @@ http {
 
     server {
         listen 80;
-        server_name {{ name }} mra.nginxps.com;
-        status_zone {{ name }};
-        rewrite_log on;
+#        server_name {{ name }}.mra.nginxps.com;
+#        status_zone {{ name }};
+#        rewrite_log on;
 
         location /v1/users {
 			proxy_cache oauth_cache;
@@ -136,11 +136,9 @@ http {
             root /usr/share/nginx/html;
         }
 
-        include default-location.conf;
-
-#        location / {
-#            return         301 https://$host$request_uri;
-#        }
+        location / {
+            return         301 https://$host$request_uri;
+        }
     }
 
     server {
@@ -156,7 +154,7 @@ http {
         keepalive_disable	none;
         keepalive_requests  100000;
 
-        server_name {{ name }} mra.nginxps.com;
+        server_name {{ name }}; # .mra.nginxps.com;
         status_zone {{ name }};
 
         {% if root %}
