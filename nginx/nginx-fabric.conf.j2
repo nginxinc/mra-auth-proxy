@@ -3,7 +3,7 @@
 server {
     listen              80;
     listen              443 ssl http2;
-    server_name  {{ name }}.{{external_domain_name}};
+    server_name  {{ name }}{% if external_domain_name != None %}.{{ external_domain_name }}{% endif %};
 
     ssl_certificate      /etc/letsencrypt/live/mra.nginxps.com/fullchain.pem;
     ssl_certificate_key  /etc/letsencrypt/live/mra.nginxps.com/privkey.pem;
@@ -20,7 +20,7 @@ server {
 
     location / {
         proxy_pass {{ protocol }}://{{ name }};
-        proxy_set_header Host {{ name }}.{{internal_domain_name}};
+        proxy_set_header Host {{ name }}{% if internal_domain_name != None %}.{{ internal_domain_name }}{% endif %};
 
         proxy_ssl_session_reuse 	on;
         proxy_ssl_protocols         TLSv1.2;
@@ -58,7 +58,7 @@ http {
     resolver_timeout 10s;
     client_max_body_size 30M;
     
-    proxy_cache_path /app/cache levels=1:2 keys_zone=oauth_cache:10m max_size=10m inactive=15s use_temp_path=off;
+    proxy_cache_path /usr/src/app/cache levels=1:2 keys_zone=oauth_cache:10m max_size=10m inactive=15s use_temp_path=off;
 
     #DDOS Configs
     limit_req_zone $binary_remote_addr zone=ddosrequests:25m rate=100r/s;

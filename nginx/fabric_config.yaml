@@ -4,8 +4,8 @@ resolver:
   host: 198.51.100.1 198.51.100.2 198.51.100.3
   ttl: 3s
 external_domain_name: mra.nginxps.com
-#internal_domain_name: internal.ec2
 internal_domain_name: marathon.mesos
+oss_extension: .oss
 services:
   album-manager:
     server: 'marathon.mesos'
