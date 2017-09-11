@@ -1,0 +1,60 @@
+name: auth-proxy
+resolver:
+  host: kube-dns.kube-system.svc.cluster.local
+  ttl: 3s
+external_domain_name: k8s.mra.nginxps.com
+internal_domain_name: svc.cluster.local
+namespace: nginx-mra
+oss_extension: .oss
+services:
+  album-manager:
+    server: nginx-mra.svc.cluster.local
+    service: 'service=_https._tcp.album-manager'
+    expose_external: true
+    healthcheck: true
+    server_block: true
+    protocol: https
+  pages:
+    server: nginx-mra.svc.cluster.local
+    service: 'service=_https._tcp.pages'
+    expose_external: true
+    healthcheck: true
+    server_block: true
+    protocol: https
+  resizer:
+    server: nginx-mra.svc.cluster.local
+    service: 'service=_https._tcp.photoresizer'
+    expose_external: true
+    healthcheck: true
+    healthcheck_uri: /healthcheck
+    server_block: true
+    protocol: https
+  uploader:
+    server: nginx-mra.svc.cluster.local
+    service: 'service=_https._tcp.photouploader'
+    expose_external: true
+    healthcheck: true
+    server_block: true
+    protocol: https
+  user-manager:
+    server: nginx-mra.svc.cluster.local
+    service: 'service=_https._tcp.user-manager'
+    expose_external: true
+    healthcheck: true
+    healthcheck_uri: /v1/
+    server_block: true
+    protocol: https
+  content-service:
+    server: nginx-mra.svc.cluster.local
+    service: 'service=_https._tcp.content-service'
+    expose_external: true
+    healthcheck: true
+    server_block: true
+    protocol: https
+  fake-s3:
+    server: nginx-mra.svc.cluster.local
+    service: 'service=_http._tcp.fake-s3'
+    expose_external: true
+    healthcheck: false
+    server_block: true
+    protocol: http
