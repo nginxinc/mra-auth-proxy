@@ -4,8 +4,12 @@ MAINTAINER NGINX Docker Maintainers "docker-maint@nginx.com"
 
 ENV USE_NGINX_PLUS=true \
     USE_VAULT=true \
-    # USE_LOCAL: set to true when you want to run the MRA locally
-    USE_LOCAL=false
+# CONTAINER_ENGINE specifies the container engine to which the
+# containers will be deployed. Valid values are:
+# - kubernetes
+# - mesos
+# - local
+    CONTAINER_ENGINE=kubernetes
 
 COPY ./letsencrypt-etc vault_env.sh /etc/letsencrypt/
 COPY nginx/ssl/* /etc/ssl/nginx/
