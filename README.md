@@ -38,7 +38,7 @@ for where you store your Docker images
 At this point, you will have an image that is suitable for deployment on to a DC/OS installation, and you can deploy the
 image by creating a JSON file and uploading it to your DC/OS installation.
 
-In order to build images for different container engines and set other options, please follow the directions below.
+To build customized images for different container engines and set other options, please follow the directions below.
 
 ## Building a Customized Image
 The Dockerfile for the Auth Proxy service is based on the ubuntu:16.04 image, and installs Python, PIP, and NGINX open source or NGINX Plus. Note that the features
