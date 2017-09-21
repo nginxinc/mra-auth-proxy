@@ -1,4 +1,4 @@
-#NGINX Microservices Reference Architecture: Auth Proxy Service
+# NGINX Microservices Reference Architecture: Auth Proxy Service
 
 This repository contains a simple Python application which is used to provide authentication and authorization for the NGINX _Ingenious_ application. 
 The _Ingenious_ application has been developed by the NGINX Professional Services team to provide a reference 
@@ -21,24 +21,49 @@ The default configuration for all the components of the MRA, including the Pages
 Instructions for using the [Router Mesh](https://www.nginx.com/blog/microservices-reference-architecture-nginx-router-mesh-model/) or 
 [Proxy Model](https://www.nginx.com/blog/microservices-reference-architecture-nginx-proxy-model/) architectures will be made available in the future.
 
-## Building the image
+## Quick start
+As a single service in the set of services which make up the NGINX Microservices Reference Architecture application, _Ingenious_,
+the Auth Proxy service is not meant to function as a standalone service.
+
+There are detailed instructions about the service below, and in order to get started quickly, you can follow these simple 
+instructions to quickly build the image. Using this quickstart method, 
+
+0. (Optional) If you don't already have an NGINX Plus license, you can request a temporary developer license 
+[here](https://www.nginx.com/developer-license/ "Developer License Form"). If you do have a license, then skip to the next step. 
+1. Copy your licenses to the **<repository-path>/auth-proxy/nginx/ssl** directory
+2. Run the command ```docker build . -t <your-image-repo-name>/auth-proxy:quickstart``` where <image-repository-name> is the username
+for where you store your Docker images
+3. Once the image has been built, push it to the docker repository with the command ```docker push -t <your-image-repo-name>/auth-proxy:quickstart```
+
+At this point, you will have an image that is suitable for deployment on to a DC/OS installation, and you can deploy the
+image by creating a JSON file and uploading it to your DC/OS installation.
+
+In order to build images for different container engines and set other options, please follow the directions below.
+
+## Building a Customized Image
 The Dockerfile for the Auth Proxy service is based on the ubuntu:16.04 image, and installs Python, PIP, and NGINX open source or NGINX Plus. Note that the features
 in NGINX Plus make discovery of other services possible, include additional Load Balancing algorithms, persistent SSL/TLS connections, and
 advanced health check functionality.
 
-The command, or entrypoint, for the Dockerfile is the [oauth-start.sh script](https://github.com/nginxinc/auth-proxy/blob/master/app/oauth-start.sh "Dockerfile entrypoint"). 
-This script sets some local variables, then starts [oauth-daemon.py](https://github.com/nginxinc/auth-proxy/blob/master/app/oauth-start.sh "Oauth Python") and NGINX in order to handle page requests.
+The command, or entrypoint, for the Dockerfile is the [oauth-start.sh script](app/oauth-start.sh "Dockerfile entrypoint"). 
+This script sets some local variables, then starts [oauth-daemon.py](app/oauth-start.sh "Oauth Python") and NGINX in order to handle page requests.
 
-### Build options
+### 1. Build options
 The Dockerfile sets some ENV arguments which are used when the image is built:
 
 - **USE_NGINX_PLUS**  
-    The default value is false. Set this environment variable to true when you want to use NGINX Plus. When this value is false, 
+    The default value is true. Set this environment variable to true when you want to use NGINX Plus. When this value is false, 
     NGINX open source will be used, and it lacks support for features like service discovery, advanced load balancing,
     and health checks. See [installing nginx plus](#installing-nginx-plus)
     
+    When this value is set to false, NGINX open source will be built in to the image and several features, including service
+    discovery and advanced load balancing will be disabled.
+    
+    When the nginx.conf file is built, the [fabric_config_local.yaml](nginx/fabric_config_local.yaml) will be
+    used to populate the open source version of the [nginx.conf template](nginx/nginx-fabric.conf.j2)
+    
 - **USE_VAULT**  
-    The default value is interpreted as false. The installation script uses [vault](https://www.vaultproject.io/) to retrieve the keys necessary to install NGINX Plus.
+    The default value is false. The installation script uses [vault](https://www.vaultproject.io/) to retrieve the keys necessary to install NGINX Plus.
     Setting this value to true will cause install-nginx.sh to look for a file named vault_env.sh which contains the _VAULT_ADDR_ and _VAULT_TOKEN_
     environment variables.        
     
@@ -51,14 +76,32 @@ The Dockerfile sets some ENV arguments which are used when the image is built:
     You must be certain to include the vault_env.sh file when _USE_VAULT_ is true. There is an entry in the .gitignore
     file for vault_env.sh
     
+    In the future, we will release an article on our [blog](https://www.nginx.com/blog/) describing how to use vault with NGINX.
+    
 - **CONTAINER_ENGINE**  
-    The container engine used to run the images. It can be one of the following values
+The container engine used to run the images. It can be one of the following values, and the default is _mesos_. A detailed
+description of each of the files is in a [separate README file](nginx/README.md)
      - docker: to run on Docker Cloud 
+     
+        When the nginx.conf file is built, the [fabric_config_docker.yaml](nginx/fabric_config_docker.yaml) will be
+        used to populate the open source version of the [nginx.conf template](nginx/nginx-plus-fabric.conf.j2)
+        
      - kubernetes: to run on Kubernetes
-     - mesos: to run on DC/OS
+     
+        When the nginx.conf file is built, the [fabric_config_k8s.yaml](nginx/fabric_config_k8s.yaml) will be
+        used to populate the open source version of the [nginx.conf template](nginx/nginx-plus-fabric.conf.j2)
+             
+     - mesos (default): to run on DC/OS
+     
+        When the nginx.conf file is built, the [fabric_config.yaml](nginx/fabric_config.yaml) will be
+        used to populate the open source version of the [nginx.conf template](nginx/nginx-plus-fabric.conf.j2)
+                  
      - local: to run in containers on the machine where the repository has been cloned
      
-### Decide whether to use NGINX Open Source or NGINX Plus
+        When the nginx.conf file is built, the [fabric_config_local.yaml](nginx/fabric_config_local.yaml) will be
+        used to populate the open source version of the [nginx.conf template](nginx/nginx-plus-fabric.conf.j2)                  
+     
+### 2. Decide whether to use NGINX Open Source or NGINX Plus
  
 #### <a href="#" id="installing-nginx-oss"></a>Installing NGINX Open Source
 
@@ -77,7 +120,7 @@ Download the **nginx-repo.crt** and **nginx-repo.key** files for your NGINX Plus
 cp nginx-repo.crt nginx-repo.key <path-to-repository>/auth-proxy/nginx/ssl/
 ```
 
-### Decide which container engine to use
+### 3. Decide which container engine to use
 
 #### Set the _CONTAINER_ENGINE_ variable
 As described above, the _CONTAINER_ENGINE_ environment variable must be set to one of the following four options.
@@ -88,7 +131,7 @@ The install-nginx.sh file uses this value to determine which template file to us
 - mesos 
 - local
 
-### Build the image
+### 4. Build the image
 
 Replace _&lt;your-image-repo-name&gt;_ and execute the command below to build the image. The _&lt;tag&gt;_ argument is optional and defaults to **latest**
 
