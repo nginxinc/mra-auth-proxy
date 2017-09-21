@@ -3,7 +3,7 @@ FROM ubuntu:16.04
 MAINTAINER NGINX Docker Maintainers "docker-maint@nginx.com"
 
 ENV USE_NGINX_PLUS=true \
-    USE_VAULT=true \
+    USE_VAULT=false \
 # CONTAINER_ENGINE specifies the container engine to which the
 # containers will be deployed. Valid values are:
 # - kubernetes
