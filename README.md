@@ -26,7 +26,7 @@ As a single service in the set of services which make up the NGINX Microservices
 the Auth Proxy service is not meant to function as a standalone service.
 
 There are detailed instructions about the service below, and in order to get started quickly, you can follow these simple 
-instructions to quickly build the image. Using this quickstart method, 
+instructions to quickly build the image. 
 
 0. (Optional) If you don't already have an NGINX Plus license, you can request a temporary developer license 
 [here](https://www.nginx.com/developer-license/ "Developer License Form"). If you do have a license, then skip to the next step. 
