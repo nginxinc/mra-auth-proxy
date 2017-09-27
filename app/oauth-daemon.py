@@ -33,6 +33,9 @@ else:
 @app.route('/')
 def index():
     try:
+        # These headers are set in default-location.conf and are
+        # set as cookies in ingenious.js based on callbacks from
+        # facebook and google authentication
         auth_token = request.headers.get('Auth-Token')
         auth_provider = request.headers.get('Auth-Provider')
         auth_fields = request.headers.get('Auth-Fields')
@@ -40,10 +43,14 @@ def index():
         # if auth_token is None or auth_provider is None:
         #     raise crypt.AppIdentityError("auth_token or auth_provider is None")
 
+        if auth_provider == 'email':
+            auth_token = request.data.form['email']
+            auth_pass = request.data.form['password']
+
         if r is not None:
             auth_result = cached_authenticate(auth_token, auth_provider)
         else:
-            auth_result = authenticate(auth_token, auth_provider)
+            auth_result = authenticate(auth_token, auth_provider, auth_pass)
 
         result = get_or_create_user(auth_provider, auth_result)
         result['auth_result'] = auth_result
@@ -80,11 +87,13 @@ def cached_authenticate(auth_token, auth_provider):
     return result
 
 
-def authenticate(auth_token, auth_provider):
+def authenticate(auth_token, auth_provider, auth_pass):
     if auth_provider == 'facebook':
         auth_result = facebook(auth_token)
     elif auth_provider == 'google':
         auth_result = google(auth_token)
+    elif auth_provider == 'email':
+        auth_result = email(auth_token, auth_pass)
     else:
         app.logger.error('No auth provider matches')
         abort(401)
@@ -159,6 +168,15 @@ def google(token):
     except crypt.AppIdentityError:
         # Invalid token
         abort(401)
+
+
+def email(email, auth_pass):
+    url = request.headers.get('User-Manager-URL')
+    payload = {
+        'email': email,
+        'auth_pass' : auth_pass
+    }
+    return requests.post(url, json=payload).json()
 
 
 if __name__ == '__main__':
