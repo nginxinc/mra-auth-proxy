@@ -41,8 +41,8 @@ ADD install-nginx.sh /usr/local/bin/
 COPY ./nginx /etc/nginx/
 RUN /usr/local/bin/install-nginx.sh && \
 # forward request logs to Docker log collector
-    ln -sf /dev/stdout /var/log/nginx/access.log && \
-    ln -sf /dev/stderr /var/log/nginx/error.log
+    ln -sf /dev/stdout /var/log/nginx/access_log && \
+    ln -sf /dev/stderr /var/log/nginx/error_log
 
 COPY ./app/ /usr/src/app
 RUN pip install -r /usr/src/app/requirements.txt && \
