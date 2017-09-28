@@ -9,9 +9,8 @@ ENV USE_NGINX_PLUS=true \
 # - kubernetes
 # - mesos (default)
 # - local
-#    CONTAINER_ENGINE=kubernetes
+    CONTAINER_ENGINE=kubernetes
 
-COPY ./letsencrypt-etc vault_env.sh /etc/letsencrypt/
 COPY nginx/ssl/* /etc/ssl/nginx/
 # Set the debconf front end to Noninteractive
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
