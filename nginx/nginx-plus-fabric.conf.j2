@@ -5,10 +5,8 @@ server {
     listen              443 ssl http2;
     server_name  {{ name }}{% if external_domain_name != None %}.{{external_domain_name}}{% endif %};
 
-    ssl_certificate      /etc/letsencrypt/live/mra.nginxps.com/fullchain.pem;
-    ssl_certificate_key  /etc/letsencrypt/live/mra.nginxps.com/privkey.pem;
-    ## verify chain of trust of OCSP response using Root CA and Intermediate certs
-    ssl_trusted_certificate /etc/letsencrypt/live/mra.nginxps.com/chain.pem;
+    ssl_certificate      /etc/ssl/nginx/certificate.pem;
+    ssl_certificate_key  /etc/ssl/nginx/key.pem;
 
     include		nginx-ssl.conf;
     rewrite_log on;
@@ -173,10 +171,8 @@ http {
     server {
         listen       443 ssl http2 default_server;
 
-        ssl_certificate      /etc/letsencrypt/live/mra.nginxps.com/fullchain.pem;
-        ssl_certificate_key  /etc/letsencrypt/live/mra.nginxps.com/privkey.pem;
-        ## verify chain of trust of OCSP response using Root CA and Intermediate certs
-        ssl_trusted_certificate /etc/letsencrypt/live/mra.nginxps.com/chain.pem;
+        ssl_certificate      /etc/ssl/nginx/certificate.pem;
+        ssl_certificate_key  /etc/ssl/nginx/key.pem;
         include nginx-ssl.conf;
 
         keepalive_timeout	3600s;

@@ -11,7 +11,7 @@ ENV USE_NGINX_PLUS=true \
 # - local
     CONTAINER_ENGINE=kubernetes
 
-COPY nginx/ssl/* /etc/ssl/nginx/
+COPY nginx/ssl/ /etc/ssl/nginx/
 # Set the debconf front end to Noninteractive
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
     apt-get update && apt-get install -y -q \
@@ -27,8 +27,6 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 	python-pip \
 	unzip \
 	wget && \
-# Get SSL/letsencrypt files required for installation
-    chown -R root:root /etc/letsencrypt && \
     cd /usr/local && \
     wget https://dl.eff.org/certbot-auto && \
     chmod a+x certbot-auto && \
