@@ -9,9 +9,8 @@ ENV USE_NGINX_PLUS=true \
 # - kubernetes
 # - mesos (default)
 # - local
-#    CONTAINER_ENGINE=kubernetes
+    CONTAINER_ENGINE=kubernetes
 
-COPY ./letsencrypt-etc vault_env.sh /etc/letsencrypt/
 COPY nginx/ssl/* /etc/ssl/nginx/
 # Set the debconf front end to Noninteractive
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
@@ -41,8 +40,8 @@ ADD install-nginx.sh /usr/local/bin/
 COPY ./nginx /etc/nginx/
 RUN /usr/local/bin/install-nginx.sh && \
 # forward request logs to Docker log collector
-    ln -sf /dev/stdout /var/log/nginx/access.log && \
-    ln -sf /dev/stderr /var/log/nginx/error.log
+    ln -sf /dev/stdout /var/log/nginx/access_log && \
+    ln -sf /dev/stderr /var/log/nginx/error_log
 
 COPY ./app/ /usr/src/app
 RUN pip install -r /usr/src/app/requirements.txt && \
