@@ -24,7 +24,7 @@ if [ "$USE_VAULT" = true ]; then
 # Install vault client
     wget -q https://releases.hashicorp.com/vault/0.5.2/vault_0.5.2_linux_amd64.zip && \
 	unzip -d /usr/local/bin vault_0.5.2_linux_amd64.zip && \
-	. /etc/letsencrypt/vault_env.sh && \
+	. /etc/ssl/nginx/vault_env.sh && \
 	mkdir -p /etc/ssl/nginx && \
 	vault token-renew && \
 	vault read -field=value secret/ssl/dhparam.pem > /etc/ssl/nginx/dhparam.pem && \
