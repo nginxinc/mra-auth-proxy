@@ -28,10 +28,10 @@ if [ "$USE_VAULT" = true ]; then
 	mkdir -p /etc/ssl/nginx && \
 	vault token-renew && \
 	vault read -field=value secret/ssl/dhparam.pem > /etc/ssl/nginx/dhparam.pem && \
-	vault read -field=value secret/letsencrypt/cert.pem > /etc/letsencrypt/archive/mra.nginxps.com/cert2.pem && \
-	vault read -field=value secret/letsencrypt/chain.pem > /etc/letsencrypt/archive/mra.nginxps.com/chain2.pem && \
-	vault read -field=value secret/letsencrypt/fullchain.pem > /etc/letsencrypt/archive/mra.nginxps.com/fullchain2.pem && \
-	vault read -field=value secret/letsencrypt/privkey.pem > /etc/letsencrypt/archive/mra.nginxps.com/privkey2.pem
+	vault read -field=value secret/letsencrypt/cert.pem > /etc/ssl/nginx/cert.pem && \
+	vault read -field=value secret/letsencrypt/chain.pem > /etc/ssl/nginx/chain.pem && \
+	vault read -field=value secret/letsencrypt/fullchain.pem > /etc/ssl/nginx/fullchain.pem && \
+	vault read -field=value secret/letsencrypt/privkey.pem > /etc/ssl/nginx/privkey.pem
 
     if [ "$USE_NGINX_PLUS" = true ]; then
         vault read -field=value secret/nginx-repo.crt > /etc/ssl/nginx/nginx-repo.crt
