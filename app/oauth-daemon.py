@@ -3,14 +3,15 @@
 import json
 import requests
 import string
+import os
+import redis
+import traceback
+
 from flask import Flask
 from flask import request
 from flask import abort
 from flask import Response
 from oauth2client import client, crypt
-import os
-import redis
-import traceback
 
 #
 #  oauth-daemon.py
@@ -39,30 +40,35 @@ def index():
         auth_token = request.headers.get('Auth-Token')
         auth_provider = request.headers.get('Auth-Provider')
         auth_fields = request.headers.get('Auth-Fields')
-         
+        
         # if auth_token is None or auth_provider is None:
         #     raise crypt.AppIdentityError("auth_token or auth_provider is None")
+        auth_result = ''
 
-        if auth_provider == 'email':
-            auth_token = request.data.form['email']
-            auth_pass = request.data.form['password']
+        # if request.method == 'POST' and auth_provider == 'email':
+        #     auth_token = request.data.form['email']
+        #     auth_pass = request.data.form['password']
 
-        if r is not None:
-            auth_result = cached_authenticate(auth_token, auth_provider)
-        else:
-            auth_result = authenticate(auth_token, auth_provider, auth_pass)
+        if auth_token is not None and auth_token != '' and auth_provider is not None and auth_provider != '':
+            if r is None:
+                auth_result = authenticate(auth_token, auth_provider)
+            else:
+                auth_result = cached_authenticate(auth_token, auth_provider)
 
-        result = get_or_create_user(auth_provider, auth_result)
-        result['auth_result'] = auth_result
+        resp = Response(status=401)
 
-        app.logger.debug(json.dumps(result))
+        if auth_result != '':
+            result = get_or_create_user(auth_provider, auth_result)
+            result['auth_result'] = auth_result
 
-        resp = Response(status=200)
-        resp.headers['Auth-Result'] = json.dumps(result)
+            app.logger.debug(json.dumps(result))
 
-        for field in string.split(auth_fields, ','):
-            if field in result:
-                resp.headers['Auth-' + field] = result[field]
+            resp = Response(status=200)
+            resp.headers['Auth-Result'] = json.dumps(result)
+
+            for field in string.split(auth_fields, ','):
+                if field in result:
+                    resp.headers['Auth-' + field] = result[field]
 
         return resp
     except Exception as e:
@@ -73,27 +79,29 @@ def index():
 
 def cached_authenticate(auth_token, auth_provider):
     key = auth_token + '_' + auth_provider
-    app.logger.debug('Key:' + key)
+    app.logger.debug('Key: ' + key)
 
     result = r.get(key)
 
-    if result is not None:
-        result = json.loads(result)
-    else:
+    if result is None:
         result = authenticate(auth_token, auth_provider)
         app.logger.debug(result)
-        r.setex(key, json.dumps(result), int(os.environ.get('REDIS_TTL')))
+
+        if result['id'] is not None:
+            r.setex(key, json.dumps(result), int(os.environ.get('REDIS_TTL')))
+    else:
+        result = json.loads(result)
 
     return result
 
 
-def authenticate(auth_token, auth_provider, auth_pass):
+def authenticate(auth_token, auth_provider):
     if auth_provider == 'facebook':
         auth_result = facebook(auth_token)
     elif auth_provider == 'google':
         auth_result = google(auth_token)
-    elif auth_provider == 'email':
-        auth_result = email(auth_token, auth_pass)
+    elif auth_provider == 'local':
+        auth_result = email(auth_token)
     else:
         app.logger.error('No auth provider matches')
         abort(401)
@@ -103,8 +111,9 @@ def authenticate(auth_token, auth_provider, auth_pass):
 
 def get_or_create_user(auth_provider, auth_result):
     url = request.headers.get('User-Manager-URL')
-    response = requests.get((url + '/{}/{}').format(auth_provider, auth_result['id']))
-    app.logger.debug((url + '/{}/{}').format(auth_provider, auth_result['id']))
+    auth_id = auth_result['local_id'] if auth_provider == 'local' else auth_result['id']
+    response = requests.get((url + '/{}/{}').format(auth_provider, auth_id))
+    app.logger.debug((url + '/{}/{}').format(auth_provider, auth_id))
 
     if response.status_code == 200:
         return response.json()
@@ -112,7 +121,7 @@ def get_or_create_user(auth_provider, auth_result):
         payload = {
             'name': auth_result['name'],
             'email': auth_result['email'],
-            auth_provider + '_id': auth_result['id']
+            auth_provider + '_id': auth_id
         }
         return requests.post(url, json=payload).json()
     else:
@@ -170,13 +179,10 @@ def google(token):
         abort(401)
 
 
-def email(email, auth_pass):
+def email(auth_token):
     url = request.headers.get('User-Manager-URL')
-    payload = {
-        'email': email,
-        'auth_pass' : auth_pass
-    }
-    return requests.post(url, json=payload).json()
+
+    return requests.get(url + '/local/' + auth_token).json()
 
 
 if __name__ == '__main__':
