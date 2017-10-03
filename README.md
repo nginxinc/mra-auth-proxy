@@ -32,10 +32,11 @@ instructions to quickly build the image.
 
 0. (Optional) If you don't already have an NGINX Plus license, you can request a temporary developer license 
 [here](https://www.nginx.com/developer-license/ "Developer License Form"). If you do have a license, then skip to the next step. 
-1. Copy your licenses to the **<repository-path>/auth-proxy/nginx/ssl** directory
-2. Run the command ```docker build . -t <your-image-repo-name>/auth-proxy:quickstart``` where <image-repository-name> is the username
-for where you store your Docker images
-3. Once the image has been built, push it to the docker repository with the command ```docker push -t <your-image-repo-name>/auth-proxy:quickstart```
+1. Copy your licenses to the **<repository-path>/auth-proxy/nginx/ssl** directory.
+2. Run the command ```sudo openssl dhparam -out ./nginx/ssl/dhparam.pem 2048``` to generate a Diffie-Hellman parameter.
+3. Run the command ```docker build . -t <your-image-repo-name>/auth-proxy:quickstart``` where <image-repository-name> is the username
+for where you store your Docker images.
+4. Once the image has been built, push it to the docker repository with the command ```docker push -t <your-image-repo-name>/auth-proxy:quickstart```.
 
 At this point, you will have an image that is suitable for deployment on to a DC/OS installation, and you can deploy the
 image by creating a JSON file and uploading it to your DC/OS installation.
@@ -143,8 +144,18 @@ Replace _&lt;your-image-repo-name&gt;_ and execute the command below to build th
 docker build . -t <your-image-repo-name>/photoresizer:<tag>
 ```
 
+## Run The Image
+
+### Generate DH parameters
+
+In order to run the image, you must first generate a dhparam.pem file for secure key-exchange within NGINX.
+
+```
+sudo openssl dhparam -out ./nginx/ssl/dhparam.pem 2048
+```
+
 ### Runtime environment variables
-In order to run the image, some environment variables must be set so that they are available during runtime.
+Some environment variables must be set so that they are available during runtime.
 
 | Variable Name | Description | Example Value |
 | ------------- | ----------- | ----------- |
