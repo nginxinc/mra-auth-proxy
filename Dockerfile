@@ -1,5 +1,6 @@
 FROM ubuntu:16.04
 
+ARG CONTAINER_ENGINE
 MAINTAINER NGINX Docker Maintainers "docker-maint@nginx.com"
 
 ENV USE_NGINX_PLUS=true \
@@ -9,7 +10,7 @@ ENV USE_NGINX_PLUS=true \
 # - kubernetes
 # - mesos (default)
 # - local
-    CONTAINER_ENGINE=kubernetes
+    CONTAINER_ENGINE=${CONTAINER_ENGINE:-kubernetes}
 
 COPY nginx/ssl/ /etc/ssl/nginx/
 # Set the debconf front end to Noninteractive
@@ -27,10 +28,6 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 	python-pip \
 	unzip \
 	wget && \
-    cd /usr/local && \
-    wget https://dl.eff.org/certbot-auto && \
-    chmod a+x certbot-auto && \
-    ./certbot-auto --os-packages-only --noninteractive && \
     cd /
 
 # Install nginx
