@@ -1,4 +1,9 @@
-FROM ubuntu:16.04
+FROM ngrefarch/python_base:3.5
+
+ARG CONTAINER_ENGINE_ARG
+ARG GOOGLE_CLIENT_ID_ARG
+ARG FACEBOOK_APP_ID_ARG
+ARG FACEBOOK_SECRET_KEY_ARG
 
 MAINTAINER NGINX Docker Maintainers "docker-maint@nginx.com"
 
@@ -9,33 +14,12 @@ ENV USE_NGINX_PLUS=true \
 # - kubernetes
 # - mesos (default)
 # - local
-#    CONTAINER_ENGINE=kubernetes
+    CONTAINER_ENGINE=${CONTAINER_ENGINE_ARG:-kubernetes} \
+    GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID_ARG} \
+    FACEBOOK_APP_ID=${FACEBOOK_APP_ID_ARG} \
+    FACEBOOK_APP_SECRET=${FACEBOOK_SECRET_KEY_ARG}
 
-COPY ./letsencrypt-etc vault_env.sh /etc/letsencrypt/
-COPY nginx/ssl/* /etc/ssl/nginx/
-# Set the debconf front end to Noninteractive
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
-    apt-get update && apt-get install -y -q \
-	apt-transport-https \
-	jq \
-	vim \
-	curl \
-	libffi-dev \
-	libssl-dev \
-	lsb-release \
-	python \
-	python-dev \
-	python-pip \
-	unzip \
-	wget && \
-# Get SSL/letsencrypt files required for installation
-    chown -R root:root /etc/letsencrypt && \
-    cd /usr/local && \
-    wget https://dl.eff.org/certbot-auto && \
-    chmod a+x certbot-auto && \
-    ./certbot-auto --os-packages-only --noninteractive && \
-    cd /
-
+COPY nginx/ssl/ /etc/ssl/nginx/
 # Install nginx
 ADD install-nginx.sh /usr/local/bin/
 COPY ./nginx /etc/nginx/
@@ -51,4 +35,4 @@ RUN pip install -r /usr/src/app/requirements.txt && \
 
 CMD ["/usr/src/app/oauth-start.sh"]
 
-EXPOSE 80 443 8888 9000 8889 28015
+EXPOSE 80 443

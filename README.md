@@ -4,7 +4,7 @@ This repository contains a simple Python application which is used to provide au
 The _Ingenious_ application has been developed by the NGINX Professional Services team to provide a reference 
 architecture for building your own microservices based application using NGINX as the service mesh for the services. 
 
-The Auth Proxy service is configured to validate authentication tokens and route requests to other components in the NGINX Microservice Reference Architecture: 
+The Auth Proxy Service is configured to validate authentication tokens and route requests to other components in the NGINX Microservice Reference Architecure: 
 - [Album Manager Service](https://github.com/nginxinc/ngra-album-manager "Album Manager")
 - [Content Service](https://github.com/nginxinc/ngra-content-service "Content Service")
 - [Pages](https://github.com/nginxinc/ngra-pages "Pages Service")
@@ -16,7 +16,7 @@ In addition, the Auth Proxy Service is configured to use an external service nam
 application would use a real Amazon S3 implementation. For the purposes of a sample or reference application, we use an image provided by
 [lphoward](https://hub.docker.com/r/lphoward/fake-s3/ "Fake S3 image"). 
 
-The default configuration for all the components of the MRA, including the Auth Proxy service, is to use the 
+The default configuration for all the components of the MRA, including the Pages service, is to use the 
 [Fabric Model Architecture](https://www.nginx.com/blog/microservices-reference-architecture-nginx-fabric-model/ "Fabric Model").
 Instructions for using the [Router Mesh](https://www.nginx.com/blog/microservices-reference-architecture-nginx-router-mesh-model/) or 
 [Proxy Model](https://www.nginx.com/blog/microservices-reference-architecture-nginx-proxy-model/) architectures will be made available in the future.
@@ -48,7 +48,7 @@ in NGINX Plus make discovery of other services possible, include additional Load
 advanced health check functionality.
 
 The command, or entrypoint, for the Dockerfile is the [oauth-start.sh script](app/oauth-start.sh "Dockerfile entrypoint"). 
-This script sets some local variables, then starts [oauth-daemon.py](app/oauth-start.sh "Oauth Python") and NGINX in order to handle page requests.
+This script sets some local variables, then starts [oauth_daemon.py](app/oauth_daemon.py "Oauth Python") and NGINX in order to handle page requests.
 
 ### 1. Build options
 The Dockerfile sets some ENV arguments which are used when the image is built:
@@ -75,7 +75,7 @@ The Dockerfile sets some ENV arguments which are used when the image is built:
     You must be certain to include the vault_env.sh file when _USE_VAULT_ is true. There is an entry in the .gitignore
     file for vault_env.sh
     
-    In the future, we will release an article on our [blog](https://www.nginx.com/blog/) describing how to use vault with NGINX.    
+    In the future, we will release an article on our [blog](https://www.nginx.com/blog/) describing how to use vault with NGINX.
     
 - **CONTAINER_ENGINE**  
     The container engine used to run the images in a container. _CONTAINER_ENGINE_ can be one of the following values
@@ -111,13 +111,11 @@ developer licenses [here](https://www.nginx.com/developer-license/ "Developer Li
 
 Set the _USE_NGINX_PLUS_ property to true in the Dockerfile
 
-##### Vault
-By default _USE_VAULT_ is set to false, and you must manually copy your **nginx-repo.crt** and **nginx-repo.key** 
-files to the _<path-to-repository>/ngra-photoresizer/nginx/ssl/_ directory.
+If you have not set _USE_VAULT_ to true, then you'll need to manually copy your **nginx-repo.crt** and **nginx-repo.key** files to the _<path-to-repository>/ngra-pages/nginx/ssl/_ directory. 
 
 Download the **nginx-repo.crt** and **nginx-repo.key** files for your NGINX Plus Developer License or subscription, and move them to the root directory of this project. You can then copy both of these files to the `/etc/nginx/ssl` directory of each microservice using the commands below:
 ```
-cp nginx-repo.crt nginx-repo.key <path-to-repository>/photoresizer/nginx/ssl/
+cp nginx-repo.crt nginx-repo.key <path-to-repository>/auth-proxy/nginx/ssl/
 ```
 
 If _USE_VAULT_ is set to true, you must have installed a vault server and written the contents of the **nginx-repo.crt**
@@ -140,10 +138,10 @@ The install-nginx.sh file uses this value to determine which template file to us
 Replace _&lt;your-image-repo-name&gt;_ and execute the command below to build the image. The _&lt;tag&gt;_ argument is optional and defaults to **latest**
 
 ```
-docker build . -t <your-image-repo-name>/photoresizer:<tag>
+docker build . -t <your-image-repo-name>/auth-proxy:<tag>
 ```
 
-### Runtime environment variables
+### 5. Runtime environment variables
 In order to run the image, some environment variables must be set so that they are available during runtime.
 
 | Variable Name | Description | Example Value |
@@ -157,9 +155,11 @@ In order to run the image, some environment variables must be set so that they a
 | PAGES_URL     | The host name of the pages application | pages.localhost |
 | AWS_REGION    | The region of the AWS application | us-west-1 |
 
+### 6. Service Endpoints
 
 #### \*Disclaimer\*
 
 
 In this service, the `nginx/ssl/dhparam.pem` file is provided for ease of setup. In production environments, it is highly recommended for secure key-exchange to replace this file with your own generated DH parameter.
  
+  

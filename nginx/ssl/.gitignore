@@ -4,3 +4,8 @@ csr.pem
 certificate.pem
 key.pem
 dhparam.pem
+vault_env.sh
+fullchain.pem
+privkey.pem
+cert.pem
+chain.pem
