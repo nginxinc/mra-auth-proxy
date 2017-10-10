@@ -137,8 +137,6 @@ http {
     server {
         listen 80;
         server_name {{ external_domain_name or "_"}};
-#        status_zone {{ name }};
-#        rewrite_log on;
 
         location /v1/users {
 			proxy_cache oauth_cache;
@@ -178,6 +176,7 @@ http {
         listen       443 ssl http2 default_server;
 
         server_name {{ external_domain_name or "_"}};
+        status_zone {{ name }};
 
         {% if ssl_directives is defined -%}
             {% for key, ssl_directive in ssl_directives.iteritems()  -%}
@@ -193,8 +192,6 @@ http {
         keepalive_disable	none;
         keepalive_requests  100000;
 
-        server_name {{ name }}; # .mra.nginxps.com;
-        status_zone {{ name }};
 
         {% if root %}
             root {{ root }};

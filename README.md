@@ -156,6 +156,12 @@ In order to run the image, some environment variables must be set so that they a
 | AWS_REGION    | The region of the AWS application | us-west-1 |
 
 ### 6. Service Endpoints
+| Endpoint | Description | Parameters |
+| ------------- | ----------- | ----------- |
+| /            | Authenticates the user based on request headers and cookies. Performs auth_request directive | None |
+| /status.html | Shows the NGINX Plus status page    | None |
+| /status      | Displays the NGINX Plus status JSON | None |
+
 
 #### \*Disclaimer\*
 
