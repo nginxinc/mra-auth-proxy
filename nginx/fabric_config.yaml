@@ -4,6 +4,7 @@ resolver:
   ttl: 3s
 external_domain_name: mra.nginxps.com
 internal_domain_name: marathon.mesos
+namespace:
 log_to_syslog : false
 syslog_error_log_location: "syslog:server=localhost:5544 debug"
 error_log_location: "/var/log/nginx/error_log debug"
