@@ -1,11 +1,11 @@
 #!/bin/sh
 NGINX_PID="/var/run/nginx.pid"    # /   (root directory)
-APP="oauth-daemon.py"
+APP="oauth_daemon.py"
 
 NGINX_CONF="/etc/nginx/nginx.conf";
 NGINX="nginx";
 
-/usr/src/app/$APP &
+python /usr/src/app/$APP &
 
 if [ "$NETWORK" = "fabric" ]
 then
