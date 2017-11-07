@@ -5,8 +5,14 @@ server {
     listen              443 ssl http2;
     server_name  {{ name }}{% if external_domain_name != None %}.{{ external_domain_name }}{% endif %};
 
-    ssl_certificate      /etc/ssl/nginx/certificate.pem;
-    ssl_certificate_key  /etc/ssl/nginx/key.pem;
+    {% if ssl_directives is defined -%}
+        {% for key, ssl_directive in ssl_directives.iteritems()  -%}
+            {{ key }} {{ ssl_directive }};
+        {% endfor -%}
+    {% else %}
+        ssl_certificate      /etc/ssl/nginx/certificate.pem;
+        ssl_certificate_key  /etc/ssl/nginx/key.pem;
+    {% endif -%}
 
     include		nginx-ssl.conf;
     rewrite_log on;
@@ -134,8 +140,14 @@ http {
     server {
         listen       443 ssl http2	default_server;
 
-        ssl_certificate      /etc/ssl/nginx/certificate.pem;
-        ssl_certificate_key  /etc/ssl/nginx/key.pem;
+        {% if ssl_directives is defined -%}
+            {% for key, ssl_directive in ssl_directives.iteritems()  -%}
+                {{ key }} {{ ssl_directive }};
+            {% endfor -%}
+        {% else %}
+            ssl_certificate      /etc/ssl/nginx/certificate.pem;
+            ssl_certificate_key  /etc/ssl/nginx/key.pem;
+        {% endif -%}
         include nginx-ssl.conf;
 
         keepalive_timeout	3600s;

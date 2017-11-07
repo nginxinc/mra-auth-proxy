@@ -5,10 +5,16 @@ server {
     listen              443 ssl http2;
     server_name  {{ name }}{% if external_domain_name != None %}.{{external_domain_name}}{% endif %};
 
-    ssl_certificate      /etc/ssl/nginx/certificate.pem;
-    ssl_certificate_key  /etc/ssl/nginx/key.pem;
+    {% if ssl_directives is defined -%}
+        {% for key, ssl_directive in ssl_directives.iteritems()  -%}
+            {{ key }} {{ ssl_directive }};
+        {% endfor -%}
+    {% else %}
+        ssl_certificate      /etc/ssl/nginx/certificate.pem;
+        ssl_certificate_key  /etc/ssl/nginx/key.pem;
+    {% endif -%}
 
-    include		nginx-ssl.conf;
+    include nginx-ssl.conf;
     rewrite_log on;
 
     status_zone {{name}};
@@ -130,9 +136,7 @@ http {
 
     server {
         listen 80;
-#        server_name {{ name }}.mra.nginxps.com;
-#        status_zone {{ name }};
-#        rewrite_log on;
+        server_name {{ external_domain_name or "_"}};
 
         location /v1/users {
 			proxy_cache oauth_cache;
@@ -171,16 +175,23 @@ http {
     server {
         listen       443 ssl http2 default_server;
 
-        ssl_certificate      /etc/ssl/nginx/certificate.pem;
-        ssl_certificate_key  /etc/ssl/nginx/key.pem;
+        server_name {{ external_domain_name or "_"}};
+        status_zone {{ name }};
+
+        {% if ssl_directives is defined -%}
+            {% for key, ssl_directive in ssl_directives.iteritems()  -%}
+                {{ key }} {{ ssl_directive }};
+            {% endfor -%}
+        {% else %}
+            ssl_certificate      /etc/ssl/nginx/certificate.pem;
+            ssl_certificate_key  /etc/ssl/nginx/key.pem;
+        {% endif -%}
         include nginx-ssl.conf;
 
         keepalive_timeout	3600s;
         keepalive_disable	none;
         keepalive_requests  100000;
 
-        server_name {{ name }}; # .mra.nginxps.com;
-        status_zone {{ name }};
 
         {% if root %}
             root {{ root }};

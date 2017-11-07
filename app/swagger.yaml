@@ -1,0 +1,44 @@
+swagger: "2.0"
+info:
+  description: "MRA Auth Proxy API"
+  version: "1.0.0"
+  title: "MRA Auth Proxy API"
+  contact:
+    name: "Charles Pretzer"
+    email: "charles.pretzer@nginx.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+paths:
+  /:
+    summary: "Used by the auth_request directive of NGINX, refer to default-location.conf"
+    get:
+      responses:
+        200:
+          description: "Successful authorization"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "User not found"
+        default:
+          description: "Successful operation"
+  /status.html:
+    summary: "Shows the NGINX Plus status page"
+    get:
+      responses:
+        200:
+          description: "Status Page OK"
+        404:
+          description: "Status Page not found"
+        default:
+          description: "Successful operation"
+  /status:
+    summary: "Shows the NGINX Plus status page as JSON"
+    get:
+      responses:
+        200:
+          description: "Successful authorization"
+        404:
+          description: "User not found"
+        default:
+          description: "Successful operation"
