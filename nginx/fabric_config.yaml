@@ -14,8 +14,8 @@ access_log_location: "/var/log/nginx/access_log combined"
 oss_extension: .oss
 #ssl_directives:
 #  ssl_certificate: /etc/ssl/nginx/fullchain.pem
-#  ssl_certificate_key:  /etc/ssl/nginx/privkey.pem;
-#  ssl_trusted_certificate: /etc/ssl/nginx/chain.pem;
+#  ssl_certificate_key:  /etc/ssl/nginx/privkey.pem
+#  ssl_trusted_certificate: /etc/ssl/nginx/chain.pem
 services:
   album-manager:
     server: 'marathon.mesos'

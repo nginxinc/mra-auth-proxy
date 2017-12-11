@@ -11,8 +11,8 @@ syslog_access_log_location: "syslog:server=localhost:5544,facility=local6,tag=pa
 access_log_location: "/var/log/nginx/access_log combined"
 #ssl_directives:
 #  ssl_certificate: /etc/ssl/nginx/fullchain.pem
-#  ssl_certificate_key:  /etc/ssl/nginx/privkey.pem;
-#  ssl_trusted_certificate: /etc/ssl/nginx/chain.pem;
+#  ssl_certificate_key:  /etc/ssl/nginx/privkey.pem
+#  ssl_trusted_certificate: /etc/ssl/nginx/chain.pem
 services:
   album-manager:
     server: 'album-manager:443'

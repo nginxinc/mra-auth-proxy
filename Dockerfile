@@ -20,6 +20,8 @@ ENV USE_NGINX_PLUS=true \
     FACEBOOK_APP_SECRET=${FACEBOOK_SECRET_KEY_ARG}
 
 COPY nginx/ssl/ /etc/ssl/nginx/
+COPY ./app/ /usr/src/app
+
 # Install nginx
 ADD install-nginx.sh /usr/local/bin/
 COPY ./nginx /etc/nginx/
@@ -28,7 +30,6 @@ RUN /usr/local/bin/install-nginx.sh && \
     ln -sf /dev/stdout /var/log/nginx/access_log && \
     ln -sf /dev/stderr /var/log/nginx/error_log
 
-COPY ./app/ /usr/src/app
 RUN pip install -r /usr/src/app/requirements.txt && \
 #    mkdir /app/cache && \
     chown -R nginx /usr/src/app/cache
