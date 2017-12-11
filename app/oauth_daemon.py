@@ -97,7 +97,7 @@ def cached_authenticate(auth_token, auth_provider):
         # call the authenticate method
         result = authenticate(auth_token, auth_provider)
         app.logger.debug(result)
-        if result['id'] is not None:
+        if 'id' in result and result['id'] is not None:
             r.setex(key, json.dumps(result), int(os.environ.get('REDIS_TTL')))
     else:
         result = json.loads(str(result, 'utf-8'))
