@@ -21,6 +21,7 @@ ENV USE_NGINX_PLUS=true \
 
 COPY nginx/ssl/ /etc/ssl/nginx/
 COPY ./app/ /usr/src/app
+WORKDIR /usr/src/app
 
 # Install nginx
 ADD install-nginx.sh /usr/local/bin/
