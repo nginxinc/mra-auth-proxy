@@ -72,21 +72,6 @@ class TestLocalAuthenticate(TestCase):
             self.assertEqual(json.loads(str(user, 'utf-8')), result)
 
 
-class TestCachedAuthenticate(TestCase):
-    user = b'{"id": "ffbef342-975a-4b15-be21-2a4040a17ec3", "local_id": "144aa913-4aca-43be-8000-2803f271bd6a", "cover_pictures_id": "346", "password": "pbkdf2:sha1:1000$Ehb68QRI$5baf1409358c46f2a2ccf47bd06ea5d6ca6ec9aa", "profile_picture_url": "generic", "email": "email@gmail.com", "profile_pictures_id": "345"}'
-
-    def redis_get(arg, user=user):
-        print('In redis get function')
-        print('Arg: ', arg)
-        return user
-
-    @patch('redis.StrictRedis.get', side_effect=redis_get)
-    def test_cached_authenticate(self, redis_mock, user=user):
-        result = cached_authenticate('144aa913-4aca-43be-8000-2803f271bd6a', 'local')
-        print('Result: ', json.dumps(result))
-        self.assertEqual(json.loads(str(user, 'utf-8')), result)
-
-
 class TestGetOrCreateUser(TestCase):
     user = b'{"id": "ffbef342-975a-4b15-be21-2a4040a17ec3", "local_id": "144aa913-4aca-43be-8000-2803f271bd6a", "cover_pictures_id": "346", "password": "pbkdf2:sha1:1000$Ehb68QRI$5baf1409358c46f2a2ccf47bd06ea5d6ca6ec9aa", "profile_picture_url": "generic", "email": "email@gmail.com", "profile_pictures_id": "345"}'
 
@@ -133,6 +118,11 @@ class TestGetOrCreateUser(TestCase):
 class TestIndex(TestCase):
     user = b'{"id": "ffbef342-975a-4b15-be21-2a4040a17ec3", "local_id": "144aa913-4aca-43be-8000-2803f271bd6a", "cover_pictures_id": "346", "password": "pbkdf2:sha1:1000$Ehb68QRI$5baf1409358c46f2a2ccf47bd06ea5d6ca6ec9aa", "profile_picture_url": "generic", "email": "email@gmail.com", "profile_pictures_id": "345"}'
 
+    def redis_get(arg, user=user):
+        print('In redis get function')
+        print('Arg: ', arg)
+        return user
+
     # Setup function for testing local email authentication
     def setUp(self):
         self.app = Flask(__name__)
@@ -143,11 +133,11 @@ class TestIndex(TestCase):
         print('Arg2: ', arg2)
         return arg2
 
-    def patch_cached_authenticate(arg1, arg2):
-        print('In cached authenticate function')
-        print('Arg1: ', arg1)
-        print('Arg2: ', arg2)
-        return arg2
+    @patch('redis.StrictRedis.get', side_effect=redis_get)
+    def patch_cached_authenticate(self, redis_mock, user=user):
+        result = cached_authenticate('144aa913-4aca-43be-8000-2803f271bd6a', 'local')
+        print('Result: ', json.dumps(result))
+        self.assertEqual(json.loads(str(user, 'utf-8')), result)
 
     def patch_get_or_create(arg1, arg2, user=user):
         print('In get or create function')

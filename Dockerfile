@@ -33,7 +33,8 @@ RUN /usr/local/bin/install-nginx.sh && \
 
 RUN pip install -r /usr/src/app/requirements.txt && \
 #    mkdir /app/cache && \
-    chown -R nginx /usr/src/app/cache
+    chown -R nginx /usr/src/app/cache && \
+    python -m unittest
 
 CMD ["/usr/src/app/oauth-start.sh"]
 
