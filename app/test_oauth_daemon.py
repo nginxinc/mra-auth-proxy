@@ -138,6 +138,7 @@ class TestIndex(TestCase):
         result = cached_authenticate('144aa913-4aca-43be-8000-2803f271bd6a', 'local')
         print('Result: ', json.dumps(result))
         self.assertEqual(json.loads(str(user, 'utf-8')), result)
+        return result
 
     def patch_get_or_create(arg1, arg2, user=user):
         print('In get or create function')
