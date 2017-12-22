@@ -4,11 +4,13 @@ ARG CONTAINER_ENGINE_ARG
 ARG GOOGLE_CLIENT_ID_ARG
 ARG FACEBOOK_APP_ID_ARG
 ARG FACEBOOK_SECRET_KEY_ARG
+ARG USE_NGINX_PLUS_ARG
+ARG USE_VAULT_ARG
 
 MAINTAINER NGINX Docker Maintainers "docker-maint@nginx.com"
 
-ENV USE_NGINX_PLUS=true \
-    USE_VAULT=false \
+ENV USE_NGINX_PLUS=${USE_NGINX_PLUS_ARG:-true} \
+    USE_VAULT=${USE_VAULT_ARG:-false} \
 # CONTAINER_ENGINE specifies the container engine to which the
 # containers will be deployed. Valid values are:
 # - kubernetes
