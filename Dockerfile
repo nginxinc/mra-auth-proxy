@@ -23,6 +23,7 @@ ENV USE_NGINX_PLUS=${USE_NGINX_PLUS_ARG:-true} \
 
 COPY nginx/ssl/ /etc/ssl/nginx/
 COPY ./app/ /usr/src/app
+WORKDIR /usr/src/app
 
 # Install nginx
 ADD install-nginx.sh /usr/local/bin/
@@ -34,7 +35,8 @@ RUN /usr/local/bin/install-nginx.sh && \
 
 RUN pip install -r /usr/src/app/requirements.txt && \
 #    mkdir /app/cache && \
-    chown -R nginx /usr/src/app/cache
+    chown -R nginx /usr/src/app/cache && \
+    python -m unittest
 
 CMD ["/usr/src/app/oauth-start.sh"]
 
