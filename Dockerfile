@@ -29,7 +29,6 @@ WORKDIR /usr/src/app
 ADD install-nginx.sh /usr/local/bin/
 COPY ./nginx /etc/nginx/
 RUN /usr/local/bin/install-nginx.sh && \
-    mkdir /usr/src/app/cache && \
     ln -sf /dev/stdout /var/log/nginx/access_log && \
     ln -sf /dev/stderr /var/log/nginx/error_log
 
