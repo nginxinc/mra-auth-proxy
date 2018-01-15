@@ -1,0 +1,20 @@
+sudo: required
+language: python
+
+services:
+- docker
+
+before_install:
+- sudo apt-get update
+- sudo apt-get install docker-engine
+- sudo service docker restart
+- make build
+
+script:
+- make test
+- docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+- make push
+
+after_success:
+- pip install fabric
+- fab deploy

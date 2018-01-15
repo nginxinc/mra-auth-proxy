@@ -1,0 +1,13 @@
+.DS_Store
+app/.env
+app/.DS_Store
+.idea
+nginx-repo.crt
+nginx-repo.key
+fabfile.pyc
+.env
+jmeter.log
+/letsencrypt
+/letsencrypt-etc
+vault_env.sh
+
