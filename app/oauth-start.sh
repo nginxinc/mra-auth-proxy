@@ -10,6 +10,8 @@ python /usr/src/app/$APP &
 if [ "$NETWORK" = "fabric" ]
 then
     echo fabric configuration set;
+else
+    echo router-mesh configuration set;
 fi
 
 if [ "$DEBUG" = "true" ]

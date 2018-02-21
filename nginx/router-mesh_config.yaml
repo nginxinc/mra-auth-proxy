@@ -1,0 +1,16 @@
+name: auth-proxy
+resolver:
+  host: 127.0.0.11
+  ttl: 3s
+root: /usr/share/nginx/html/
+services:
+  pages:
+    server: pages
+    port: 81
+    scheme: http
+    expose_external: true
+    healthcheck: true
+    healthcheck_uri: /
+    router_mesh:
+      host: router-mesh
+      port: 80

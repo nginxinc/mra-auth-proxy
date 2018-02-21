@@ -1,22 +1,36 @@
 #!/bin/bash
 
-wget -O /usr/local/sbin/generate_config -q https://s3-us-west-1.amazonaws.com/fabric-model/config-generator/generate_config
-chmod +x /usr/local/sbin/generate_config
-
-CONFIG_FILE=/etc/nginx/fabric_config.yaml
-
 echo -e "\033[32m -----"
 echo -e "\033[32m Building for ${CONTAINER_ENGINE}"
 echo -e "\033[32m -----\033[0m"
 
-case "$CONTAINER_ENGINE" in
-    kubernetes)
-        CONFIG_FILE=/etc/nginx/fabric_config_k8s.yaml
-        ;;
-    local)
-        CONFIG_FILE=/etc/nginx/fabric_config_local.yaml
-        ;;
-esac
+if [ "$NETWORK" = "fabric" ]
+then
+    wget -O /usr/local/bin/generate_config -q https://s3-us-west-1.amazonaws.com/fabric-model/config-generator/generate_config
+    chmod +x /usr/local/bin/generate_config
+
+    GENERATE_CONFIG_FILE=/usr/local/bin/generate_config
+    TEMPLATE_FILE_PLUS=/etc/nginx/nginx-plus-fabric.conf.j2
+    TEMPLATE_FILE=/etc/nginx/nginx-fabric.conf.j2
+
+    case "$CONTAINER_ENGINE" in
+        kubernetes)
+            CONFIG_FILE=/etc/nginx/fabric_config_k8s.yaml
+            ;;
+        local)
+            CONFIG_FILE=/etc/nginx/fabric_config_local.yaml
+            ;;
+        *)
+            CONFIG_FILE=/etc/nginx/fabric_config.yaml
+            ;;
+    esac
+else
+    GENERATE_CONFIG_FILE=/usr/local/bin/generate_config_router_mesh
+    CONFIG_FILE=/etc/nginx/router-mesh_config.yaml
+    TEMPLATE_FILE_PLUS=/etc/nginx/nginx-plus-router-mesh.conf.j2
+    TEMPLATE_FILE=/etc/nginx/nginx-router-mesh.conf.j2
+fi
+
 
 if [ "$USE_VAULT" = true ]; then
 # Install vault client
@@ -77,7 +91,7 @@ then
   apt-get update
   apt-get install -o Dpkg::Options::="--force-confold" -y nginx-plus
 
-  /usr/local/sbin/generate_config -p ${CONFIG_FILE} -t /etc/nginx/nginx-plus-fabric.conf.j2 > /etc/nginx/nginx.conf
+  ${GENERATE_CONFIG_FILE} -p ${CONFIG_FILE} -t ${TEMPLATE_FILE_PLUS} > /etc/nginx/nginx.conf
 else
   echo "Installing NGINX OSS"
 
@@ -87,5 +101,5 @@ else
   apt-get update
   apt-get install -o Dpkg::Options::="--force-confold" -y nginx
 
-    /usr/local/sbin/generate_config -p ${CONFIG_FILE} -t /etc/nginx/nginx-fabric.conf.j2 > /etc/nginx/nginx.conf
+    ${GENERATE_CONFIG_FILE} -p ${CONFIG_FILE} -t ${TEMPLATE_FILE} > /etc/nginx/nginx.conf
 fi
