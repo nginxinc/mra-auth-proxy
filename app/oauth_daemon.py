@@ -11,6 +11,7 @@ from flask import request
 from flask import abort
 from flask import Response
 from oauth2client import client, crypt
+from pwd import getpwnam
 
 #
 #  oauth_daemon.py
@@ -18,6 +19,9 @@ from oauth2client import client, crypt
 #
 #  Copyright (C) 2017 NGINX Inc. All rights reserved.
 #
+
+uid = getpwnam('me')[2]
+os.setuid(uid)
 
 # Initialize Flask
 app = Flask(__name__)
