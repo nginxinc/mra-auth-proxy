@@ -25,6 +25,8 @@ COPY nginx/ssl/ /etc/ssl/nginx/
 COPY ./app/ /usr/src/app
 WORKDIR /usr/src/app
 
+RUN apt-get -y install vim
+
 # Install nginx
 ADD install-nginx.sh /usr/local/bin/
 ADD nginx/generate_config_router_mesh /usr/local/bin/
