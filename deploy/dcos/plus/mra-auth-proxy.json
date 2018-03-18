@@ -37,7 +37,7 @@
   },
   "fetch": [
     {
-      "uri": "<IMAGE_REPOSITORY_CREDENTIALS>",
+      "uri": "<IMAGE_REPOSITORY_CREDENTIALS>"
     }
   ]
 }
