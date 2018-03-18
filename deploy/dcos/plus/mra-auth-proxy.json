@@ -1,0 +1,43 @@
+{  
+  "id": "/auth-proxy",
+  "acceptedResourceRoles": ["slave_public"],
+  "cpus": 1,
+  "mem": 1024,
+  "instances": 1,
+  "env":  {
+    "REDIS_HOST": "<REDIS_HOST_NAME>",
+    "REDIS_ENABLED": "1",
+    "REDIS_PORT": "6379",
+    "REDIS_TTL": "300",
+    "AWS_ACCESS_KEY_ID":"<AWS_ACCESS_KEY>",
+    "AWS_SECRET_ACCESS_KEY":"<AWS_SECRET_ACCESS_KEY>",
+    "AWS_REGION":"us-west-1",
+    "PAGES_URL" : "pages.marathon.mesos",
+    "NETWORK" : "fabric"
+  },
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "<IMAGE_REPO_AND_TAG>",
+      "forcePullImage": true,
+      "network": "BRIDGE",
+      "portMappings": [
+        {
+            "containerPort": 443,
+            "hostPort": 443,
+            "protocol": "tcp"
+        },
+        {
+            "containerPort": 80,
+            "hostPort": 80,
+            "protocol": "tcp"
+        }
+      ]
+	}
+  },
+  "fetch": [
+    {
+      "uri": "<IMAGE_REPOSITORY_CREDENTIALS>",
+    }
+  ]
+}
