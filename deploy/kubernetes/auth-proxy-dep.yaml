@@ -1,0 +1,51 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: auth-proxy
+  namespace: nginx-mra
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx-mra
+        component: auth-proxy
+    spec:
+      imagePullSecrets:
+        - name: <DOCKER_SECRET>
+      containers:
+      - name: auth-proxy
+        image: <IMAGE_REPO_AND_TAG>
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 443
+          name: https
+        env:
+          - name: AWS_ACCESS_KEY_ID
+            value: <AWS_ACCESS_KEY_ID>
+          - name: AWS_REGION
+            value: us-west-1
+          - name: AWS_SECRET_ACCESS_KEY
+            value: <AWS_SECRET_ACCESS_KEY>
+          - name: PAGES_URL
+            value: pages.nginx-mra
+          - name: REDIS_HOST
+            value: redis.nginx-mra
+          - name: REDIS_ENABLED
+            value: "1"
+          - name: REDIS_PORT
+            value: "6379"
+          - name: REDIS_TTL
+            value: "300"
+        livenessProbe:
+          httpGet:
+            scheme: HTTPS
+            path: /status
+            port: 443
+            httpHeaders:
+              - name: Host
+                value: <K8S_HOST_NAME>
+          periodSeconds: 20
+          timeoutSeconds: 20
+          successThreshold: 1
+          failureThreshold: 10
