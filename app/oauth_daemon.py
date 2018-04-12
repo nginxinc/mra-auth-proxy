@@ -20,9 +20,6 @@ from pwd import getpwnam
 #  Copyright (C) 2017 NGINX Inc. All rights reserved.
 #
 
-uid = getpwnam('me')[2]
-os.setuid(uid)
-
 # Initialize Flask
 app = Flask(__name__)
 

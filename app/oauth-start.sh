@@ -5,7 +5,7 @@ APP="oauth_daemon.py"
 NGINX_CONF="/etc/nginx/nginx.conf";
 NGINX="nginx";
 
-python /usr/src/app/$APP &
+su auth-proxy -c 'python /usr/src/app/oauth_daemon.py' &
 
 if [ "$NETWORK" = "fabric" ]
 then

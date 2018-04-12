@@ -1,6 +1,6 @@
 FROM ngrefarch/python_base:3.5
 
-RUN useradd --create-home -s /bin/bash me
+RUN useradd --create-home -s /bin/bash auth-proxy
 
 ARG CONTAINER_ENGINE_ARG
 ARG GOOGLE_CLIENT_ID_ARG
