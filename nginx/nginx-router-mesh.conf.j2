@@ -67,7 +67,7 @@ http {
 
     {% for name, service in services.iteritems() %}
     upstream {{ name }} {
-        server        {{ router_mesh.host }};
+        server        {{ router_mesh.host }}{% if namespace != None and internal_domain_name != None %}.{{ namespace }}.{{ internal_domain_name }}{% endif %};
         zone backend  64k;
         keepalive 		300;
     }
@@ -81,7 +81,7 @@ http {
 			#proxy_cache_min_uses 3;
 			proxy_cache_valid      200  30s;
 			proxy_cache_use_stale  error timeout invalid_header updating http_500 http_502 http_503 http_504;
-            proxy_pass http://{{ router_mesh.host }}/user-manager/v1/users;
+            proxy_pass http://router-mesh/user-manager/v1/users;
             proxy_set_header Host user-manager{% if internal_domain_name != None and internal_domain_name != '' %}.{{ internal_domain_name }}{% endif %};
 
 			# Default is HTTP/1, keepalive is only enabled in HTTP/1.1
@@ -139,7 +139,7 @@ http {
 
 stream{
     upstream content-db {
-        server        content-db{% if internal_domain_name != None and internal_domain_name != '' %}.{{ internal_domain_name }}{% endif %}:28015;
+        server        content-db{% if namespace != None and internal_domain_name != None %}.{{ namespace }}.{{ internal_domain_name }}{% endif %}:28015;
         zone stream  64k;
     }
 
