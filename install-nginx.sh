@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo -e "\033[32m -----"
-echo -e "\033[32m Building for ${CONTAINER_ENGINE}"
+echo -e "\033[32m Building for ${CONTAINER_ENGINE} with ${NETWORK}"
 echo -e "\033[32m -----\033[0m"
 
 if [ "$NETWORK" = "fabric" ]
@@ -26,9 +26,20 @@ then
     esac
 else
     GENERATE_CONFIG_FILE=/usr/local/bin/generate_config_router_mesh
-    CONFIG_FILE=/etc/nginx/router-mesh_config.yaml
     TEMPLATE_FILE_PLUS=/etc/nginx/nginx-plus-router-mesh.conf.j2
     TEMPLATE_FILE=/etc/nginx/nginx-router-mesh.conf.j2
+
+    case "$CONTAINER_ENGINE" in
+        kubernetes)
+            CONFIG_FILE=/etc/nginx/router-mesh_config_k8s.yaml
+            ;;
+        local)
+            CONFIG_FILE=/etc/nginx/router-mesh_config.yaml
+            ;;
+        *)
+            CONFIG_FILE=/etc/nginx/fabric_config.yaml 
+            ;;
+    esac
 fi
 
 
