@@ -31,7 +31,6 @@ RUN apt-get -y install vim
 
 # Install nginx
 ADD install-nginx.sh /usr/local/bin/
-ADD nginx/generate_config_router_mesh /usr/local/bin/
 COPY ./nginx /etc/nginx/
 RUN /usr/local/bin/install-nginx.sh && \
     ln -sf /dev/stdout /var/log/nginx/access_log && \
@@ -39,7 +38,6 @@ RUN /usr/local/bin/install-nginx.sh && \
 
 # Build the application
 RUN pip install -r /usr/src/app/requirements.txt && \
-    chown -R nginx /usr/src/app/cache && \
     python -m unittest
 
 CMD ["/usr/src/app/oauth-start.sh"]

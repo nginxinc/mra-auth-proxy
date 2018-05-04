@@ -22,7 +22,7 @@ services:
     healthcheck: true
     healthcheck_uri: /
   pages:
-    server: pages
+    server: router-mesh
     scheme: http
     expose_external: true
     healthcheck: true

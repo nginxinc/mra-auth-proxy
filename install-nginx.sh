@@ -4,12 +4,13 @@ echo -e "\033[32m -----"
 echo -e "\033[32m Building for ${CONTAINER_ENGINE} with ${NETWORK}"
 echo -e "\033[32m -----\033[0m"
 
+wget -O /usr/local/bin/generate_config -q https://s3-us-west-1.amazonaws.com/fabric-model/config-generator/generate_config
+chmod +x /usr/local/bin/generate_config
+
+GENERATE_CONFIG_FILE=/usr/local/bin/generate_config
+
 if [ "$NETWORK" = "fabric" ]
 then
-    wget -O /usr/local/bin/generate_config -q https://s3-us-west-1.amazonaws.com/fabric-model/config-generator/generate_config
-    chmod +x /usr/local/bin/generate_config
-
-    GENERATE_CONFIG_FILE=/usr/local/bin/generate_config
     TEMPLATE_FILE_PLUS=/etc/nginx/nginx-plus-fabric.conf.j2
     TEMPLATE_FILE=/etc/nginx/nginx-fabric.conf.j2
 
@@ -25,7 +26,6 @@ then
             ;;
     esac
 else
-    GENERATE_CONFIG_FILE=/usr/local/bin/generate_config_router_mesh
     TEMPLATE_FILE_PLUS=/etc/nginx/nginx-plus-router-mesh.conf.j2
     TEMPLATE_FILE=/etc/nginx/nginx-router-mesh.conf.j2
 
