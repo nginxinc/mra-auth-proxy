@@ -2,7 +2,7 @@
 NGINX_PID="/var/run/nginx.pid"    # /   (root directory)
 APP="oauth_daemon.py"
 
-NGINX_CONF="/etc/nginx/nginx.conf";
+NGINX_CONF="/etc/nginx/fabric_nginx_$CONTAINER_ENGINE.conf";
 NGINX="nginx";
 
 python /usr/src/app/$APP &
