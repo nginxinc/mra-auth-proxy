@@ -1,16 +1,8 @@
 #!/bin/sh
 NGINX_PID="/var/run/nginx.pid"    # /   (root directory)
-APP="oauth_daemon.py"
-
-NGINX_CONF="/etc/nginx/nginx.conf";
+NGINX_CONF="";
 NGINX="nginx";
-
-python /usr/src/app/$APP &
-
-if [ "$NETWORK" = "fabric" ]
-then
-    echo fabric configuration set;
-fi
+APP="oauth_daemon.py"
 
 if [ "$DEBUG" = "true" ]
 then
@@ -18,7 +10,19 @@ then
     echo System is set to DEBUG;
 fi
 
-$NGINX -c "$NGINX_CONF" -g "pid $NGINX_PID;" &
+case "$NETWORK" in
+    fabric)
+        NGINX_CONF="/etc/nginx/fabric_nginx_$CONTAINER_ENGINE.conf"
+        echo 'Fabric configuration set'
+        $NGINX -c "$NGINX_CONF" -g "pid $NGINX_PID;" &
+        ;;
+    router-mesh)
+        ;;
+    *)
+        echo 'Network not supported'
+esac
+
+python /usr/src/app/$APP &
 
 sleep 5
 APP_PID=`ps aux | grep "$APP" | grep -v grep`
