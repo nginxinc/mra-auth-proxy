@@ -140,7 +140,8 @@ def get_or_create_user(auth_provider, auth_result):
 
     # when using the local authentication provider, the auth ID is stored in the
     # local_id entry of the auth_result
-    auth_id = auth_result['local_id'] if auth_provider == 'local' else auth_result['id']
+    auth_id = auth_result['local_id'] \
+        if 'local_id' in auth_result and auth_provider == 'local' else auth_result['id']
     response = requests.get((url + '/{}/{}').format(auth_provider, auth_id))
     app.logger.debug((url + '/{}/{}').format(auth_provider, auth_id))
 

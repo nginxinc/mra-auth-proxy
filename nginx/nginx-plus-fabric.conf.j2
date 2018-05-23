@@ -2,6 +2,11 @@
 {% macro server_block(name, healthcheck='', healthcheck_uri='', external_domain_name='', internal_domain_name='', protocol='https') -%}
 server {
     listen              80;
+    server_name  {{ name }}{% if external_domain_name != None %}.{{external_domain_name}}{% endif %};
+    return 301 https://$host$request_uri;
+}
+
+server {
     listen              443 ssl http2;
     server_name  {{ name }}{% if external_domain_name != None %}.{{external_domain_name}}{% endif %};
 
@@ -135,7 +140,7 @@ http {
     {% endfor %}
 
     server {
-        listen 80;
+        listen 80 default_server;
         server_name {{ external_domain_name or "_"}};
 
         location /v1/users {
@@ -144,7 +149,7 @@ http {
 			proxy_cache_valid      200  30s;
 			proxy_cache_use_stale  error timeout invalid_header updating http_500 http_502 http_503 http_504;
             proxy_pass https://user-manager;
-            proxy_set_header Host user-manager.marathon.mesos;
+            proxy_set_header Host user-manager{% if internal_domain_name != None and internal_domain_name != '' %}.{{ internal_domain_name }}{% endif %};
 
             proxy_ssl_session_reuse 	on;
 			proxy_ssl_protocols         TLSv1.2;
@@ -162,18 +167,13 @@ http {
     		#deny  all;
 	    }
 
-        location ~ /.well-known {
-            allow all;
-            root /usr/share/nginx/html;
-        }
-
-        location / {
+       location / {
             return         301 https://$host$request_uri;
         }
     }
 
     server {
-        listen       443 ssl http2 default_server;
+        listen       443 ssl http2;
 
         server_name {{ external_domain_name or "_"}};
         status_zone {{ name }};
@@ -199,12 +199,12 @@ http {
 
         include default-location.conf;
 
-			#DDOS Configs
-			limit_req zone=ddosrequests burst=150 nodelay;
-            #should only be used when under attack.
-            #limit_conn ddosconnections 100;
-            #set non-default response code to indicate no response and closed connection
-            limit_req_status 444;
+        #DDOS Configs
+        limit_req zone=ddosrequests burst=150 nodelay;
+        #should only be used when under attack.
+        #limit_conn ddosconnections 100;
+        #set non-default response code to indicate no response and closed connection
+        limit_req_status 444;
 
 
         location = /status.html {
@@ -216,9 +216,7 @@ http {
         }
     }
     
-    {% for name, service in services.iteritems() if service.server_block%}
-            {{ server_block(name, service.healthcheck, service.healthcheck_uri, external_domain_name=external_domain_name, internal_domain_name=internal_domain_name, protocol=service.protocol) }}
-    {% endfor %}
+
 }
 
 stream{
