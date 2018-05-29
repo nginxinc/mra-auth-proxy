@@ -4,6 +4,8 @@ NGINX_CONF="";
 NGINX="nginx";
 APP="oauth_daemon.py"
 
+su auth-proxy -c 'python /usr/src/app/oauth_daemon.py' &
+
 if [ "$DEBUG" = "true" ]
 then
     NGINX="nginx-debug";

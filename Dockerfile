@@ -1,5 +1,7 @@
 FROM ngrefarch/python_base:3.5
 
+RUN useradd --create-home -s /bin/bash auth-proxy
+
 ARG CONTAINER_ENGINE_ARG
 ARG GOOGLE_CLIENT_ID_ARG
 ARG FACEBOOK_APP_ID_ARG
@@ -37,6 +39,8 @@ RUN /usr/local/bin/install-nginx.sh && \
 # Build the application
 RUN pip install -r /usr/src/app/requirements.txt && \
     python -m unittest
+
+RUN chmod -R 777 /usr/src/app
 
 CMD ["/usr/src/app/oauth-start.sh"]
 
