@@ -11,6 +11,7 @@ from flask import request
 from flask import abort
 from flask import Response
 from oauth2client import client, crypt
+from pwd import getpwnam
 
 #
 #  oauth_daemon.py
