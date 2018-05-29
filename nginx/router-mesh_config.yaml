@@ -1,0 +1,29 @@
+name: auth-proxy
+resolver:
+  host: 127.0.0.11
+  ttl: 3s
+external_domain_name:
+internal_domain_name:
+namespace:
+log_to_syslog : false
+syslog_error_log_location: "syslog:server=localhost:5544 debug"
+error_log_location: "/var/log/nginx/error_log debug"
+service_log_name: auth-proxy_mra
+syslog_access_log_location: "syslog:server=localhost:5544,facility=local6,tag=auth-proxy_mra,severity=info json"
+access_log_location: "/var/log/nginx/access_log combined"
+router_mesh:
+  host: router-mesh
+  port: 80
+services:
+  router_mesh:
+    server: router-mesh
+    scheme: http
+    expose_external: true
+    healthcheck: true
+    healthcheck_uri: /
+  pages:
+    server: pages
+    scheme: http
+    expose_external: true
+    healthcheck: true
+    healthcheck_uri: /

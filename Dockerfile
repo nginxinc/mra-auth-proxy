@@ -1,10 +1,12 @@
 FROM ngrefarch/python_base:3.5
 
+ARG CONTAINER_ENGINE_ARG
 ARG GOOGLE_CLIENT_ID_ARG
 ARG FACEBOOK_APP_ID_ARG
 ARG FACEBOOK_SECRET_KEY_ARG
 ARG USE_NGINX_PLUS_ARG
 ARG USE_VAULT_ARG
+ARG NETWORK_ARG
 
 MAINTAINER NGINX Docker Maintainers "mra-dev@nginx.com"
 
@@ -15,6 +17,8 @@ MAINTAINER NGINX Docker Maintainers "mra-dev@nginx.com"
 # - local
 ENV USE_NGINX_PLUS=${USE_NGINX_PLUS_ARG:-true} \
     USE_VAULT=${USE_VAULT_ARG:-false} \
+    CONTAINER_ENGINE=${CONTAINER_ENGINE_ARG:-kubernetes} \
+    NETWORK=${NETWORK_ARG:-fabric} \
     GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID_ARG} \
     FACEBOOK_APP_ID=${FACEBOOK_APP_ID_ARG} \
     FACEBOOK_APP_SECRET=${FACEBOOK_SECRET_KEY_ARG}
@@ -25,6 +29,7 @@ WORKDIR /usr/src/app
 
 # Install nginx
 ADD install-nginx.sh /usr/local/bin/
+ADD nginx/generate_config_router_mesh /usr/local/bin/
 COPY ./nginx /etc/nginx/
 RUN /usr/local/bin/install-nginx.sh && \
     ln -sf /dev/stdout /var/log/nginx/access_log && \
