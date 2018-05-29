@@ -67,7 +67,7 @@ http {
 
     {% for name, service in services.iteritems() %}
     upstream {{ name }} {
-        server        {{ router_mesh.host }}{% if namespace != None and internal_domain_name != None %}.{{ namespace }}.{{ internal_domain_name }}{% endif %};
+        server        {{ router_mesh.host }};
         zone backend  64k;
         keepalive 		300;
     }
