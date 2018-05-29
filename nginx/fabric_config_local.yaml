@@ -1,0 +1,60 @@
+name: auth-proxy
+resolver:
+  host: 127.0.0.11
+  ttl: 3s
+internal_domain_name:
+log_to_syslog : false
+syslog_error_log_location: "syslog:server=localhost:5544 debug"
+error_log_location: "/var/log/nginx/error_log debug"
+service_log_name: pages_mra
+syslog_access_log_location: "syslog:server=localhost:5544,facility=local6,tag=pages_mra,severity=info json"
+access_log_location: "/var/log/nginx/access_log combined"
+#ssl_directives:
+#  ssl_certificate: /etc/ssl/nginx/fullchain.pem
+#  ssl_certificate_key:  /etc/ssl/nginx/privkey.pem
+#  ssl_trusted_certificate: /etc/ssl/nginx/chain.pem
+services:
+  album-manager:
+    server: 'album-manager:443'
+    expose_external: true
+    healthecheck: false
+    server_block: true
+    protocol: https
+  pages:
+    server: 'pages:443'
+    expose_external: true
+    healthecheck: false
+    server_block: true
+    protocol: https
+  resizer:
+    server: 'resizer:443'
+    expose_external: true
+    healthecheck: false
+    healthcheck_uri: /healthcheck
+    server_block: true
+    protocol: https
+  uploader:
+    server: 'uploader:443'
+    expose_external: true
+    healthecheck: false
+    server_block: true
+    protocol: https
+  user-manager:
+    server: 'user-manager:443'
+    expose_external: true
+    healthecheck: false
+    healthcheck_uri: /v1/
+    server_block: true
+    protocol: https
+  content-service:
+    server: 'content-service:443'
+    expose_external: true
+    healthecheck: false
+    server_block: true
+    protocol: https
+  fake-s3:
+    server: 'fake-s3:443'
+    expose_external: true
+    healthcheck: false
+    server_block: true
+    protocol: http
