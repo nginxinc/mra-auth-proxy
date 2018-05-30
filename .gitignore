@@ -10,4 +10,5 @@ jmeter.log
 /letsencrypt
 /letsencrypt-etc
 vault_env.sh
+*.iml
 
