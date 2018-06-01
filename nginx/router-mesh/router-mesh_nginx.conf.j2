@@ -121,7 +121,7 @@ http {
         root {{ root }};
         {% endif %}
 
-        include default-location.conf;
+        include router-mesh_default-location.conf;
 
 			#DDOS Configs
 			limit_req zone=ddosrequests burst=150 nodelay;
