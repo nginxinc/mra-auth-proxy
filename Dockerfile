@@ -9,6 +9,7 @@ ARG FACEBOOK_SECRET_KEY_ARG
 ARG USE_NGINX_PLUS_ARG
 ARG USE_VAULT_ARG
 ARG NETWORK_ARG
+ARG USE_MTLS_ARG
 
 MAINTAINER NGINX Docker Maintainers "mra-dev@nginx.com"
 
@@ -23,7 +24,9 @@ ENV USE_NGINX_PLUS=${USE_NGINX_PLUS_ARG:-true} \
     NETWORK=${NETWORK_ARG:-fabric} \
     GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID_ARG} \
     FACEBOOK_APP_ID=${FACEBOOK_APP_ID_ARG} \
-    FACEBOOK_APP_SECRET=${FACEBOOK_SECRET_KEY_ARG}
+    FACEBOOK_APP_SECRET=${FACEBOOK_SECRET_KEY_ARG} \
+  	USE_MTLS=${USE_MTLS_ARG:-false}
+
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
     apt-get update && apt-get install -y -q \

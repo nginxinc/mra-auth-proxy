@@ -12,3 +12,6 @@ jmeter.log
 vault_env.sh
 *.iml
 
+*.pem
+*.csr
+*.key
