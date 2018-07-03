@@ -18,21 +18,21 @@ oss_extension: .oss
 #  ssl_trusted_certificate: /etc/ssl/nginx/chain.pem
 services:
   album-manager:
-    server: nginx-mra.svc.cluster.local
+    server: svc.cluster.local:443
     service: 'service=_https._tcp.album-manager'
     expose_external: true
     healthcheck: true
     server_block: true
     protocol: https
   pages:
-    server: nginx-mra.svc.cluster.local
+    server: svc.cluster.local:443
     service: 'service=_https._tcp.pages'
     expose_external: true
     healthcheck: true
     server_block: true
     protocol: https
   resizer:
-    server: nginx-mra.svc.cluster.local
+    server: svc.cluster.local:443
     service: 'service=_https._tcp.photoresizer'
     expose_external: true
     healthcheck: true
@@ -40,14 +40,14 @@ services:
     server_block: true
     protocol: https
   uploader:
-    server: nginx-mra.svc.cluster.local
+    server: svc.cluster.local:443
     service: 'service=_https._tcp.photouploader'
     expose_external: true
     healthcheck: true
     server_block: true
     protocol: https
   user-manager:
-    server: nginx-mra.svc.cluster.local
+    server: svc.cluster.local:443
     service: 'service=_https._tcp.user-manager'
     expose_external: true
     healthcheck: true
@@ -55,14 +55,14 @@ services:
     server_block: true
     protocol: https
   content-service:
-    server: nginx-mra.svc.cluster.local
+    server: svc.cluster.local:443
     service: 'service=_https._tcp.content-service'
     expose_external: true
     healthcheck: true
     server_block: true
     protocol: https
   fake-s3:
-    server: nginx-mra.svc.cluster.local
+    server: svc.cluster.local:443
     service: 'service=_http._tcp.fake-s3'
     expose_external: true
     healthcheck: false

@@ -4,7 +4,7 @@ wget -O /usr/local/sbin/generate_config -q https://s3-us-west-1.amazonaws.com/fa
 chmod +x /usr/local/sbin/generate_config
 
 FABRIC_TEMPLATE_FILE="/etc/nginx/fabric/fabric_nginx-plus.conf.j2"
-ROUTER_MESH_TEMPLATE_FILE="/etc/nginx/router-mesh/router-mesh_nginx_plus.conf.j2"
+ROUTER_MESH_TEMPLATE_FILE="/etc/nginx/router-mesh/router-mesh_nginx-plus.conf.j2"
 
 if [ "$USE_NGINX_PLUS" = false ];
 then
@@ -13,9 +13,11 @@ then
 fi
 
 echo Generating NGINX configurations...
+echo Fabric Template File ${FABRIC_TEMPLATE_FILE}
+echo Router Mesh Template File ${ROUTER_MESH_TEMPLATE_FILE}
 
 # Generate configurations for Fabric Model
-/usr/local/sbin/generate_config -p /etc/nginx/fabric/fabric_config_dcos.yaml -t ${FABRIC_TEMPLATE_FILE} > /etc/nginx/fabric_nginx_dcos.conf
+/usr/local/sbin/generate_config -p /etc/nginx/fabric/fabric_config.yaml -t ${FABRIC_TEMPLATE_FILE} > /etc/nginx/fabric_nginx_dcos.conf
 /usr/local/sbin/generate_config -p /etc/nginx/fabric/fabric_config_k8s.yaml -t ${FABRIC_TEMPLATE_FILE} > /etc/nginx/fabric_nginx_kubernetes.conf
 /usr/local/sbin/generate_config -p /etc/nginx/fabric/fabric_config_local.yaml -t ${FABRIC_TEMPLATE_FILE} > /etc/nginx/fabric_nginx_local.conf
 

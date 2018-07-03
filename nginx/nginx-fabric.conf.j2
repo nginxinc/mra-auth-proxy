@@ -104,7 +104,7 @@ http {
 
     {% for name, service in services.iteritems() %}
     upstream {{ name }} {
-        server        {{ service.server }};
+        server        {{ name }}{% if namespace != None %}.{{ namespace }}{% endif %}.{{ service.server }};
         zone backend  64k;
         keepalive 		300;
     }

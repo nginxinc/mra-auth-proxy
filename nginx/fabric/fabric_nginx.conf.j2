@@ -104,7 +104,7 @@ http {
 
     {% for name, service in services.iteritems() %}
     upstream {{ name }} {
-        server        {{ service.server }};
+        server        {{ name }}{% if namespace != None %}.{{ namespace }}{% endif %}.{{ service.server }};
         zone backend  64k;
         keepalive 		300;
     }
@@ -190,7 +190,7 @@ http {
 
 stream{
     upstream content-db {
-        server        content-db{% if internal_domain_name != None and internal_domain_name != '' %}.{{ internal_domain_name }}{% endif %}:28015;
+        server        content-db{% if namespace != None %}.{{ namespace }}{% endif %}{% if internal_domain_name != None and internal_domain_name != '' %}.{{ internal_domain_name }}{% endif %}:28015;
         zone stream  64k;
     }
 
