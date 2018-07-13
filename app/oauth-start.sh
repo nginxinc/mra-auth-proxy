@@ -1,16 +1,9 @@
 #!/bin/sh
 NGINX_PID="/var/run/nginx.pid"    # /   (root directory)
+NGINX_CONF="";
 APP="oauth_daemon.py"
 
-NGINX_CONF="/etc/nginx/nginx.conf";
-NGINX="nginx";
-
-python /usr/src/app/$APP &
-
-if [ "$NETWORK" = "fabric" ]
-then
-    echo fabric configuration set;
-fi
+su auth-proxy -c 'python /usr/src/app/oauth_daemon.py' &
 
 if [ "$DEBUG" = "true" ]
 then
@@ -18,13 +11,34 @@ then
     echo System is set to DEBUG;
 fi
 
-$NGINX -c "$NGINX_CONF" -g "pid $NGINX_PID;" &
+python /usr/src/app/${APP} &
 
 sleep 5
 APP_PID=`ps aux | grep "$APP" | grep -v grep`
 
-while [ "$APP_PID" ];
-do 
+
+case "$NETWORK" in
+    fabric)
+        NGINX_CONF="/etc/nginx/fabric_nginx_$CONTAINER_ENGINE.conf"
+        echo 'Fabric configuration set'
+        ;;
+    router-mesh)
+        NGINX_CONF="/etc/nginx/router-mesh_nginx_$CONTAINER_ENGINE.conf"
+        echo 'Router Mesh configuration set'
+        ;;
+    proxy)
+        ;;
+    *)
+        echo 'Network not supported'
+        exit 1;
+esac
+
+nginx -c "$NGINX_CONF" -g "pid $NGINX_PID;" &
+
+sleep 10
+
+while [ -f "$NGINX_PID" ] &&  [ "$APP_PID" ];
+do
 	sleep 5;
 	APP_PID=`ps aux | grep "$APP" | grep -v grep`;
 done

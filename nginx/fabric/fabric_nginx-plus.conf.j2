@@ -8,7 +8,7 @@ server {
 
 server {
     listen              443 ssl http2;
-    server_name  {{ name }}{% if external_domain_name != None %}.{{ external_domain_name }}{% endif %};
+    server_name  {{ name }}{% if external_domain_name != None %}.{{external_domain_name}}{% endif %};
 
     {% if ssl_directives is defined -%}
         {% for key, ssl_directive in ssl_directives.iteritems()  -%}
@@ -19,17 +19,24 @@ server {
         ssl_certificate_key  /etc/ssl/nginx/key.pem;
     {% endif -%}
 
-    include		nginx-ssl.conf;
+    include nginx-ssl.conf;
     rewrite_log on;
-    
+
+    status_zone {{name}};
+
     keepalive_timeout	3600s;
     keepalive_disable	none;
     keepalive_requests  100000;
 
+        location ~ /.well-known {
+            allow all;
+            root /usr/share/nginx/html;
+        }
+
 
     location / {
         proxy_pass {{ protocol }}://{{ name }};
-        proxy_set_header Host {{ name }}{% if internal_domain_name != None %}.{{ internal_domain_name }}{% endif %};
+        proxy_set_header Host {{ name }}{% if namespace != None %}.{{ namespace }}{% endif %}{% if internal_domain_name != None %}.{{ internal_domain_name }}{% endif %};
 
         proxy_ssl_session_reuse 	on;
         proxy_ssl_protocols         TLSv1.2;
@@ -44,7 +51,28 @@ server {
         proxy_set_header Accept-Encoding "";
     }
 
+    location /health-check-{{ name }}	{
+        internal;
+        proxy_pass {{ protocol }}://{{ name }};
+        proxy_set_header Host {{ name }}{% if namespace != None %}.{{ namespace }}{% endif %}{% if internal_domain_name != None %}.{{ internal_domain_name }}{% endif %};
 
+        proxy_ssl_session_reuse 	on;
+        proxy_ssl_protocols         TLSv1.2;
+        #proxy_ssl_ciphers           'ECDHE-RSA-AES128-GCM-SHA256';
+        proxy_ssl_verify 			off;
+        proxy_read_timeout     		3600s;
+        proxy_connect_timeout  		3600s;
+
+        # Default is HTTP/1, keepalive is only enabled in HTTP/1.1
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Accept-Encoding "";
+        proxy_set_header Auth-ID 'test';
+
+        {% if healthcheck %}
+          health_check interval=2s fails=1 uri={{healthcheck_uri or "/"}};
+        {% endif %}
+    }
 }
 {%- endmacro %}
 
@@ -95,7 +123,7 @@ http {
     {% else %}
         access_log {{ access_log_location }};
     {% endif %}
-    
+
     proxy_cache_path /usr/src/app/cache levels=1:2 keys_zone=oauth_cache:10m max_size=10m inactive=15s use_temp_path=off;
 
     #DDOS Configs
@@ -104,8 +132,13 @@ http {
 
     {% for name, service in services.iteritems() %}
     upstream {{ name }} {
-        server        {{ name }}{% if namespace != None %}.{{ namespace }}{% endif %}.{{ service.server }};
+      {% if namespace != None and namespace != '' %}
+        server        {{ namespace }}.{% if service.server == None or service.server == '' %}{{ name }}{% else %}{{ service.server }}{% endif %} {{ service.service }} resolve;
+      {% else %}
+        server        {% if namespace != None and namespace != '' %}{{ namespace }}.{% endif %}{% if service.server == None or service.server == '' %}{{ name }}{% else %}{{ service.server }}{% endif %}{% if service.port %}:{{ service.port }}{% endif %} {{ service.service }} resolve;
+      {% endif %}
         zone backend  64k;
+        least_time 		last_byte;
         keepalive 		300;
     }
     {% endfor %}
@@ -113,7 +146,6 @@ http {
     server {
         listen 80 default_server;
         server_name {{ external_domain_name or "_"}};
-
 
         location /v1/users {
 			proxy_cache oauth_cache;
@@ -139,14 +171,16 @@ http {
     		#deny  all;
 	    }
 
-        location / {
+       location / {
             return         301 https://$host$request_uri;
         }
-
     }
 
     server {
         listen       443 ssl http2;
+
+        server_name {{ external_domain_name or "_"}};
+        status_zone {{ name }};
 
         {% if ssl_directives is defined -%}
             {% for key, ssl_directive in ssl_directives.iteritems()  -%}
@@ -162,7 +196,6 @@ http {
         keepalive_disable	none;
         keepalive_requests  100000;
 
-        server_name {{ name }};
 
         {% if root %}
             root {{ root }};
@@ -181,16 +214,18 @@ http {
         location = /status.html {
             root /usr/share/nginx/html/;
         }
+
+        location /status {
+            status;
+        }
     }
-    
-    {% for name, service in services.iteritems() if service.server_block%}
-            {{ server_block(name, service.healthcheck, service.healthcheck_uri, external_domain_name=external_domain_name, internal_domain_name=internal_domain_name, protocol=service.protocol) }}
-    {% endfor %}
+
+
 }
 
 stream{
     upstream content-db {
-        server        content-db{% if internal_domain_name != None and internal_domain_name != '' %}.{{ internal_domain_name }}{% endif %}:28015;
+        server        content-db{% if namespace != None %}.{{ namespace }}{% endif %}{% if internal_domain_name %}.{{ internal_domain_name }}{% endif %}:28015 resolve;
         zone stream  64k;
     }
 
