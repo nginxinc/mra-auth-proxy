@@ -11,6 +11,7 @@ from flask import request
 from flask import abort
 from flask import Response
 from oauth2client import client, crypt
+from pwd import getpwnam
 
 #
 #  oauth_daemon.py
@@ -75,7 +76,7 @@ def index():
         return resp
     except Exception as e:
         app.logger.error(e)
-        traceback.print_exc()
+        traceback.print_exc('/dev/stdout')
         abort(401)
 
 

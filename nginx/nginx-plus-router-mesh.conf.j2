@@ -1,54 +1,3 @@
-########### Jinja2 Macro for Proxy Servers ###############
-{% macro server_block(name, healthcheck='', healthcheck_uri='', external_domain_name='', internal_domain_name='', protocol='https') -%}
-server {
-    listen              80;
-    server_name  {{ name }}{% if external_domain_name != None %}.{{external_domain_name}}{% endif %};
-    return 301 https://$host$request_uri;
-}
-
-server {
-    listen              443 ssl http2;
-    server_name  {{ name }}{% if external_domain_name != None %}.{{ external_domain_name }}{% endif %};
-
-    {% if ssl_directives is defined -%}
-        {% for key, ssl_directive in ssl_directives.iteritems()  -%}
-            {{ key }} {{ ssl_directive }};
-        {% endfor -%}
-    {% else %}
-        ssl_certificate      /etc/ssl/nginx/certificate.pem;
-        ssl_certificate_key  /etc/ssl/nginx/key.pem;
-    {% endif -%}
-
-    include		nginx-ssl.conf;
-    rewrite_log on;
-    
-    keepalive_timeout	3600s;
-    keepalive_disable	none;
-    keepalive_requests  100000;
-
-
-    location / {
-        proxy_pass {{ protocol }}://{{ name }};
-        proxy_set_header Host {{ name }}{% if internal_domain_name != None %}.{{ internal_domain_name }}{% endif %};
-
-        proxy_ssl_session_reuse 	on;
-        proxy_ssl_protocols         TLSv1.2;
-        #proxy_ssl_ciphers           'ECDHE-RSA-AES128-GCM-SHA256';
-        proxy_ssl_verify 			off;
-        proxy_read_timeout     		3600;
-        proxy_connect_timeout  		3600;
-
-        # Default is HTTP/1, keepalive is only enabled in HTTP/1.1
-        proxy_http_version 1.1;
-        proxy_set_header Connection "";
-        proxy_set_header Accept-Encoding "";
-    }
-
-
-}
-{%- endmacro %}
-
-
 {% if log_to_syslog %}
 error_log {{ syslog_error_log_location }};
 {% else %}
@@ -95,7 +44,7 @@ http {
     {% else %}
         access_log {{ access_log_location }};
     {% endif %}
-    
+
     proxy_cache_path /usr/src/app/cache levels=1:2 keys_zone=oauth_cache:10m max_size=10m inactive=15s use_temp_path=off;
 
     #DDOS Configs
@@ -104,8 +53,9 @@ http {
 
     {% for name, service in services.iteritems() %}
     upstream {{ name }} {
-        server        {{ name }}{% if namespace != None %}.{{ namespace }}{% endif %}.{{ service.server }};
+        server        {{ router_mesh.host }}.{{ namespace }}.{{ internal_domain_name }} service=_http._tcp resolve;
         zone backend  64k;
+        least_time 		last_byte;
         keepalive 		300;
     }
     {% endfor %}
@@ -114,13 +64,12 @@ http {
         listen 80 default_server;
         server_name {{ external_domain_name or "_"}};
 
-
         location /v1/users {
 			proxy_cache oauth_cache;
 			#proxy_cache_min_uses 3;
 			proxy_cache_valid      200  30s;
 			proxy_cache_use_stale  error timeout invalid_header updating http_500 http_502 http_503 http_504;
-            proxy_pass https://user-manager;
+            proxy_pass http://router_mesh/user-manager/v1/users;
             proxy_set_header Host user-manager{% if internal_domain_name != None and internal_domain_name != '' %}.{{ internal_domain_name }}{% endif %};
 
             proxy_ssl_session_reuse 	on;
@@ -128,7 +77,7 @@ http {
 			#proxy_ssl_ciphers           'ECDHE-RSA-AES128-GCM-SHA256';
 			proxy_ssl_verify 			off;
 			proxy_read_timeout     		3600;
- 			proxy_connect_timeout  		3600;
+            proxy_connect_timeout  		3600;
 
 			# Default is HTTP/1, keepalive is only enabled in HTTP/1.1
 			proxy_http_version 1.1;
@@ -136,17 +85,19 @@ http {
 			proxy_set_header Accept-Encoding "";
 			#allow 173.186.135.1/24;
 			#allow 127.0.0.1;
-    		#deny  all;
+            #deny  all;
 	    }
 
-        location / {
+       location / {
             return         301 https://$host$request_uri;
         }
-
     }
 
     server {
         listen       443 ssl http2;
+
+        server_name {{ external_domain_name or "_"}};
+        status_zone {{ name }};
 
         {% if ssl_directives is defined -%}
             {% for key, ssl_directive in ssl_directives.iteritems()  -%}
@@ -162,7 +113,6 @@ http {
         keepalive_disable	none;
         keepalive_requests  100000;
 
-        server_name {{ name }};
 
         {% if root %}
             root {{ root }};
@@ -182,15 +132,13 @@ http {
             root /usr/share/nginx/html/;
         }
     }
-    
-    {% for name, service in services.iteritems() if service.server_block%}
-            {{ server_block(name, service.healthcheck, service.healthcheck_uri, external_domain_name=external_domain_name, internal_domain_name=internal_domain_name, protocol=service.protocol) }}
-    {% endfor %}
+
+
 }
 
 stream{
     upstream content-db {
-        server        content-db{% if internal_domain_name != None and internal_domain_name != '' %}.{{ internal_domain_name }}{% endif %}:28015;
+        server        content-db{% if namespace != None and internal_domain_name != None %}.{{ namespace }}.{{ internal_domain_name }}{% endif %}:28015 resolve;
         zone stream  64k;
     }
 
