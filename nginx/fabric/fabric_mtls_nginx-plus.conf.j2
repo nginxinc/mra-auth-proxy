@@ -1,4 +1,3 @@
-########### Jinja2 Macro for Proxy Servers ###############
 {% macro server_block(name, healthcheck='', healthcheck_uri='', external_domain_name='', internal_domain_name='', protocol='https') -%}
 server {
     listen              80;
@@ -28,46 +27,35 @@ server {
     keepalive_disable	none;
     keepalive_requests  100000;
 
-        location ~ /.well-known {
-            allow all;
-            root /usr/share/nginx/html;
-        }
+    proxy_set_header Host {{ name }};
+    proxy_ssl_session_reuse         on;
+    proxy_ssl_protocols             TLSv1.2;
+    proxy_ssl_certificate           /etc/ssl/nginx/{{ name }}_client.pem;
+    proxy_ssl_certificate_key       /etc/ssl/nginx/{{ name }}_client.key;
+    proxy_ssl_trusted_certificate   /etc/ssl/nginx/{{ name }}_ca.pem;
+    proxy_ssl_name                  "{{ name }}";
+    proxy_ssl_verify                on;
+    proxy_ssl_verify_depth          1;
+    proxy_ssl_ciphers               HIGH:!aNULL:!MD5;
 
+    # Default is HTTP/1, keepalive is only enabled in HTTP/1.1
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+    proxy_set_header Accept-Encoding "";
+    proxy_set_header Auth-ID 'test';
+
+    location ~ /.well-known {
+        allow all;
+        root /usr/share/nginx/html;
+    }
 
     location / {
-        proxy_pass {{ protocol }}://{{ name }};
-        proxy_set_header Host {{ name }}{% if namespace != None %}.{{ namespace }}{% endif %}{% if internal_domain_name != None %}.{{ internal_domain_name }}{% endif %};
-
-        proxy_ssl_session_reuse 	on;
-        proxy_ssl_protocols         TLSv1.2;
-        #proxy_ssl_ciphers           'ECDHE-RSA-AES128-GCM-SHA256';
-        proxy_ssl_verify 			off;
-        proxy_read_timeout     		3600;
-        proxy_connect_timeout  		3600;
-
-        # Default is HTTP/1, keepalive is only enabled in HTTP/1.1
-        proxy_http_version 1.1;
-        proxy_set_header Connection "";
-        proxy_set_header Accept-Encoding "";
+        proxy_pass https://{{ name }};
     }
 
     location /health-check-{{ name }}	{
         internal;
-        proxy_pass {{ protocol }}://{{ name }};
-        proxy_set_header Host {{ name }}{% if namespace != None %}.{{ namespace }}{% endif %}{% if internal_domain_name != None %}.{{ internal_domain_name }}{% endif %};
-
-        proxy_ssl_session_reuse 	on;
-        proxy_ssl_protocols         TLSv1.2;
-        #proxy_ssl_ciphers           'ECDHE-RSA-AES128-GCM-SHA256';
-        proxy_ssl_verify 			off;
-        proxy_read_timeout     		3600s;
-        proxy_connect_timeout  		3600s;
-
-        # Default is HTTP/1, keepalive is only enabled in HTTP/1.1
-        proxy_http_version 1.1;
-        proxy_set_header Connection "";
-        proxy_set_header Accept-Encoding "";
-        proxy_set_header Auth-ID 'test';
+        proxy_pass https://{{ name }};
 
         {% if healthcheck %}
           health_check interval=2s fails=1 uri={{healthcheck_uri or "/"}};
@@ -75,7 +63,6 @@ server {
     }
 }
 {%- endmacro %}
-
 
 {% if log_to_syslog %}
 error_log {{ syslog_error_log_location }};
@@ -94,9 +81,8 @@ http {
 
     include mime.types;
     include nginx-gz.conf;
-
     resolver {{ resolver.host }} valid={{ resolver.ttl }};  #use local DNS and override TTL to whatever value makes sense
-    resolver_timeout 10s;
+    resolver_timeout 2s;
     client_max_body_size 30M;
 
     {% if log_to_syslog %}
@@ -115,7 +101,8 @@ http {
     {% else %}
         log_format main {{ service_log_name }} '$remote_addr - $remote_user [$time_local] "$request" '
               '$status $body_bytes_sent "$http_referer" '
-              '"$http_user_agent" "$http_x_forwarded_for"';
+              '"$http_user_agent" "$http_x_forwarded_for" '
+              'rt="$request_time" uct="$upstream_connect_time" uht="$upstream_header_time" urt="$upstream_response_time" ';
     {% endif %}
 
     {% if log_to_syslog %}
@@ -123,93 +110,89 @@ http {
     {% else %}
         access_log {{ access_log_location }};
     {% endif %}
-
     proxy_cache_path /usr/src/app/cache levels=1:2 keys_zone=oauth_cache:10m max_size=10m inactive=15s use_temp_path=off;
 
     #DDOS Configs
     limit_req_zone $binary_remote_addr zone=ddosrequests:25m rate=100r/s;
     limit_conn_zone $binary_remote_addr zone=ddosconnections:25m;
 
-    {% for name, service in services.iteritems() %}
-    upstream {{ name }} {
-      {% if namespace != None and namespace != '' %}
-        server        {{ namespace }}.{% if service.server == None or service.server == '' %}{{ name }}{% else %}{{ service.server }}{% endif %} {{ service.service }} resolve;
-      {% else %}
-        server        {% if namespace != None and namespace != '' %}{{ namespace }}.{% endif %}{% if service.server == None or service.server == '' %}{{ name }}{% else %}{{ service.server }}{% endif %}{% if service.port %}:{{ service.port }}{% endif %} {{ service.service }} resolve;
-      {% endif %}
-        zone backend  64k;
-        least_time 		last_byte;
-        keepalive 		300;
-    }
-    {% endfor %}
+
+    {% if services %}
+        {% for name, service in services.iteritems() %}
+            upstream {{ name }} {
+                server        {{ service.server }} {{ service.service }} resolve;
+                zone backend  64k;
+                least_time 		last_byte;
+                keepalive 		300;
+            }
+        {% endfor %}
+    {% endif %}
 
     server {
-        listen 80 default_server;
+        listen 80;
         server_name {{ external_domain_name or "_"}};
 
         location /v1/users {
-			proxy_cache oauth_cache;
-			#proxy_cache_min_uses 3;
-			proxy_cache_valid      200  30s;
-			proxy_cache_use_stale  error timeout invalid_header updating http_500 http_502 http_503 http_504;
+            proxy_cache oauth_cache;
+            proxy_cache_valid      200  30s;
+            proxy_cache_use_stale  error timeout invalid_header updating http_500 http_502 http_503 http_504;
+
             proxy_pass https://user-manager;
-            proxy_set_header Host user-manager{% if internal_domain_name != None and internal_domain_name != '' %}.{{ internal_domain_name }}{% endif %};
+            proxy_set_header Host user-manager;
 
-            proxy_ssl_session_reuse 	on;
-			proxy_ssl_protocols         TLSv1.2;
-			#proxy_ssl_ciphers           'ECDHE-RSA-AES128-GCM-SHA256';
-			proxy_ssl_verify 			off;
-			proxy_read_timeout     		3600;
- 			proxy_connect_timeout  		3600;
+            proxy_ssl_session_reuse         on;
+            proxy_ssl_protocols             TLSv1.2;
+            proxy_ssl_certificate           /etc/ssl/nginx/user-manager_client.pem;
+            proxy_ssl_certificate_key       /etc/ssl/nginx/user-manager_client.key;
+            proxy_ssl_trusted_certificate   /etc/ssl/nginx/user-manager_ca.pem;
+            proxy_ssl_name                  "user-manager";
+            proxy_ssl_verify                on;
+            proxy_ssl_verify_depth          1;
+            proxy_ssl_ciphers               HIGH:!aNULL:!MD5;
 
-			# Default is HTTP/1, keepalive is only enabled in HTTP/1.1
-			proxy_http_version 1.1;
-			proxy_set_header Connection "";
-			proxy_set_header Accept-Encoding "";
-			#allow 173.186.135.1/24;
-			#allow 127.0.0.1;
-    		#deny  all;
-	    }
+            # Default is HTTP/1, keepalive is only enabled in HTTP/1.1
+            proxy_http_version 1.1;
+            proxy_set_header Connection "";
+            proxy_set_header Accept-Encoding "";
+            allow 127.0.0.1;
+            deny  all;
+        }
 
-       location / {
-            return         301 https://$host$request_uri;
+        location / {
+          return         301 https://$host$request_uri;
         }
     }
 
     server {
-        listen       443 ssl http2;
+        listen    443 ssl http2;
 
-        server_name {{ external_domain_name or "_"}};
-        status_zone {{ name }};
+        ssl_certificate      /etc/ssl/nginx/{{ name }}.pem;
+        ssl_certificate_key  /etc/ssl/nginx/{{ name }}.key;
 
-        {% if ssl_directives is defined -%}
-            {% for key, ssl_directive in ssl_directives.iteritems()  -%}
-                {{ key }} {{ ssl_directive }};
-            {% endfor -%}
-        {% else %}
-            ssl_certificate      /etc/ssl/nginx/certificate.pem;
-            ssl_certificate_key  /etc/ssl/nginx/key.pem;
-        {% endif -%}
         include nginx-ssl.conf;
 
         keepalive_timeout	3600s;
         keepalive_disable	none;
         keepalive_requests  100000;
 
+        server_name {{ name }};
+        status_zone {{ name }};
 
         {% if root %}
             root {{ root }};
         {% endif %}
 
+        error_page 401 403 /login;
+
+        proxy_ssl_certificate           /etc/ssl/nginx/pages_client.pem;
+        proxy_ssl_certificate_key       /etc/ssl/nginx/pages_client.key;
+        proxy_ssl_trusted_certificate   /etc/ssl/nginx/pages_ca.pem;
+        proxy_ssl_name                  "pages";
+        proxy_ssl_verify                on;
+        proxy_ssl_verify_depth          1;
+        proxy_ssl_ciphers               HIGH:!aNULL:!MD5;
+
         include default-location.conf;
-
-        #DDOS Configs
-        limit_req zone=ddosrequests burst=150 nodelay;
-        #should only be used when under attack.
-        #limit_conn ddosconnections 100;
-        #set non-default response code to indicate no response and closed connection
-        limit_req_status 444;
-
 
         location /api {
             api;
